@@ -60,29 +60,39 @@ updateRadioBtnGroup = function(session=app$session,id,value, app=getApp()) {
   session$sendCustomMessage(type = 'updateRadioBtnGroup',message = list(id=id, value=value))
 }
 
-radioBtnGroupHTML = function(id, labels, values=seq_along(labels), init.value=values[1], style="", class="",...) {
+radioBtnGroupHTML = function(id, labels, values=seq_along(labels), init.value=values[1], div.style="", div.extra.class=NULL, btn.style="", register.with.shiny=TRUE,...) {
 
   restore.point("radioBtnGroupHTML")
 
   n = length(values)
 
+  no.shiny = if(!register.with.shiny) {
+    "data-noshiny = true;"
+  } else {
+    ""
+  }
+
+  div.class = "btn-group asradio-btn-group"
+  if (!is.null(div.extra.class)) div.class = paste(div.class, div.extra.class)
+
+
   if (is.null(init.value)) {
-    class = paste0("btn btn-default ", class)
     div.value.str = paste0('data-value = ""')
+    btn.class="btn btn-default"
   } else {
     init.ind = which(values==init.value)
-    tclass = rep("btn btn-default",n)
-    tclass[init.ind] = "btn btn-primary"
-    class = paste(tclass," ",class)
+    btn.class = rep("btn btn-default",n)
+    btn.class[init.ind] = "btn btn-primary"
     div.value.str = paste0('data-value = "',init.value,'"')
   }
+
   #<button id="myid__btn1" type="button" class="btn" value = "1">Left</button>
   btn.html = paste0(collapse="\n",
-'<button id="', id,'__btn__',values,'" type="button" class="',class,'" value = "',values,'" style="',style,'">',labels,'</button>')
+'<button id="', id,'__btn__',values,'" type="button" class="',btn.class,'" value = "',values,'" style="',btn.style,'">',labels,'</button>')
 
 
   html = paste0(
-    '<div id="',id,'" class="btn-group asradio-btn-group" data-toggle="buttons" ', div.value.str, '>\n',
+    '<div id="',id,'" class="', div.class,'" data-toggle="buttons" ', div.value.str, " ", no.shiny,' style="', div.style,'">\n',
     btn.html,
     '\n</div>'
   )
@@ -98,27 +108,32 @@ $(".asradio-btn-group .btn").click(function() {
   var groupid = this.parentNode.id;
   var oldval = $("#"+groupid).attr("data-value");
   var newval = $(this).val();
-  //alert("clicked "+newval);
+  //alert(".asradio-btn-group .btn.click: oldval = "+oldval+" newval = "+newval);
 
   if (oldval !== newval) {
     // update value of container div
     $("#"+groupid).attr("data-value",newval);
+
 
     // change button class to primary
     var oldid = "#"+groupid+"__btn__"+oldval;
     $(this).removeClass( "btn-default" ).addClass( "btn-primary" );
     $(oldid).removeClass( "btn-primary" ).addClass( "btn-default" );
     //alert(oldid)
+    $("#"+groupid).trigger("change");
 
     // send shiny change event
-    Shiny.onInputChange("radioBtnGroupChange", {eventId:"radioBtnGroupChange",id: groupid, value: newval});
+    var noshiny = $("#"+groupid).attr("data-noshiny");
+    //alert("noshiny = "+noshiny);
+    if (noshiny !== true) {
+      Shiny.onInputChange("radioBtnGroupChange", {eventId:"radioBtnGroupChange",id: groupid, value: newval});
+    }
     return;
   }
 });
 
 Shiny.addCustomMessageHandler("updateRadioBtnGroup",
   function(message) {
-    //alert("Hi");
     var id = message.id;
     var value = message.value;
     var btnid = "#"+id+"__btn__"+value;

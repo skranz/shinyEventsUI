@@ -3,13 +3,17 @@
 function show_selector(id, selector_child, selector_div, shown_seldiv) {
   //alert("show_selector(id=" + id + ")");
 
+  // for select input
   var value = $("#"+id).val();
+  // for button group
+  if (value === "")
+    value = $("#"+id).attr("data-value");
 
 
   // show selector itself
   shown_seldiv.push(id);
   $("#"+id).show();
-  //alert(id+" "+value);
+  //alert("show_selector: "+id+" value "+value);
 
   // show divs
   var divs = selector_div[id];
@@ -34,6 +38,7 @@ function show_selector(id, selector_child, selector_div, shown_seldiv) {
   var children = selector_child[id];
   if (typeof children !== "undefined") {
     var childid = children[value];
+    //alert("childid: " + childid + " value = "+value);
     if (typeof childid !== "undefined") {
       show_selector(childid,selector_child, selector_div, shown_seldiv);
     }

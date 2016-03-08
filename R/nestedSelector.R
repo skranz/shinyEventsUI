@@ -10,7 +10,7 @@ example = function() {
       div = "1",
       choices = list("Section 1"=1,"Section 2"=2),
       children = list("1"="subsections1"),
-      contents.id = list("2"="div2")
+      contents = list("2"="div2")
     ),
     subsections1 = list(
       label = "Subsection",
@@ -69,7 +69,7 @@ nestedSelector = function(id,selectors, label="", show.first=TRUE, input.type=c(
   child.js = paste0("\n  var ", nali$selector_child," = ",toJSON(child.li,auto_unbox=TRUE),";")
 
   div.li = lapply(selectors, function(sel) {
-    res = sel$contents.id
+    res = sel$contents
     if (is.null(names(res)) & is.list(res)) names(res) = sel$choices
     res
   })
@@ -79,7 +79,7 @@ nestedSelector = function(id,selectors, label="", show.first=TRUE, input.type=c(
   div.js = paste0("\n  var ", nali$selector_div," = ",toJSON(div.li, auto_unbox=TRUE),";")
 
   select.ui.li = lapply(seq_along(selectors), function(i) {
-    make.selector.select.ui(i,id,selectors,show.first, input.type)
+    make.selector.select.ui(i=i,id=id,selectors=selectors,show.first=show.first, input.type=input.type, nali=nali)
   })
   ui.bar = select.ui.li
   names(select.ui.li) = nf(names(selectors))
@@ -99,21 +99,22 @@ nestedSelector = function(id,selectors, label="", show.first=TRUE, input.type=c(
 
   addShinyRessourcePath()
   head.tags = tagList(
-    singleton(tags$head(tags$script(src="jquery/jquery.min.js"))),
-    singleton(tags$head(tags$script(src="shinyNestedSelector/nestedsel.js")))
+    #singleton(tags$head(tags$script(src="jquery/jquery.min.js"))),
+    singleton(tags$head(tags$script(src="shinyEventsUI/nestedsel.js")))
   )
 
   ui = tagList(
     head.tags,
     ui.bar,
-    tags$script(HTML(spec.js))
+    tags$script(HTML(spec.js)),
+    tags$script(HTML(radioBtnGroupScript()))
   )
 
   res = list(ui=ui, select.ui.li=select.ui.li, head.tags=head.tags, id=id, selectors=selectors)
 }
 
 
-make.selector.select.ui = function(i,id, selectors, show.first, input.type="radioBtnGroup") {
+make.selector.select.ui = function(i,id, selectors, show.first, input.type="radioBtnGroup", nali) {
   restore.point("make.selector.select.ui")
   nf = function(cid) {
     if (is.null(cid)) return(NULL)
@@ -139,8 +140,9 @@ make.selector.select.ui = function(i,id, selectors, show.first, input.type="radi
       "<option value='",sel$choices,"'>",names(sel$choices),"</option>"))
 
     html = paste0("<select id='",sel_id,"' class='",nali$sel.class,"'  style='",style,"'>\n",options,"\n</select>")
+
   } else {
-    html =radioBtnGroupHTML(id=sel_id,labels = names(sel$choices),values = unlist(sel$choices),style = style)
+    html =radioBtnGroupHTML(id=sel_id,labels = names(sel$choices),values = unlist(sel$choices),div.style = style, div.extra.class=nali$sel.class)
   }
   HTML(html)
 
