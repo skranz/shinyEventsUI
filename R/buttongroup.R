@@ -25,13 +25,13 @@ examples.radioBtnGroup = function() {
 #'
 #' use radioBtnGroupHandler to add a handler for a value change
 #' @export
-radioBtnGroup = function(id, labels,values=seq_along(labels), handler=NULL,...) {
+radioBtnGroup = function(id, labels,values=seq_along(labels), handler=NULL, div.style="", div.extra.class="btn-group-sm",btn.style="",...) {
   restore.point("radioBtnGroup")
 
   addShinyRessourcePath()
   inds = seq_along(values)
 
-  html = radioBtnGroupHTML(id,labels,values,...)
+  html = radioBtnGroupHTML(id,labels,values,div.style=div.style, div.extra.class=div.extra.class, btn.style=btn.style,...)
   ui = HTML(html)
 
   if (!is.null(handler)) {

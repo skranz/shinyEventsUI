@@ -23,6 +23,7 @@ function show_selector(id,so) {
   var divs = so.selector_div[id];
   if (typeof divs !== "undefined") {
     var divid = divs[value];
+    //alert("show div "+ divid);
     if (typeof divid !== "undefined") {
       if (divid instanceof Array) {
         for (var i = 0; i < divid.length; i++) {
@@ -83,14 +84,17 @@ function selectorPartOnChange(el,so, selector_id) {
 
 
   var ids = [];
+  var divs = [];
   var values = [];
   for (var i=0; i < so.shown_seldiv.length; i++) {
     if (so.shown_is_sel[i]) {
       ids.push(so.shown_seldiv[i]);
       values.push(getSelectorPartValue($("#"+so.shown_seldiv[i])));
+    } else {
+      divs.push(so.shown_seldiv[i]);
     }
   }
-  Shiny.onInputChange("nestedSelectorHandlerEvent", {eventId:"nestedSelectorHandlerEvent",id: selector_id, shown_sel: ids, values: values});
+  Shiny.onInputChange("nestedSelectorHandlerEvent", {eventId:"nestedSelectorHandlerEvent",id: selector_id, shown_sel: ids, values: values, shown_contents: divs});
 
   return;
 }

@@ -50,7 +50,7 @@ hidden_div = function(id,...,style="") {
 
 #' Nested select menus that show associated div elements
 #' @export
-nestedSelector = function(id,selectors, label="", show.first=TRUE, input.type=c("radioBtnGroup","select")[1]) {
+nestedSelector = function(id,selectors, label="", show.first=TRUE, input.type=c("radioBtnGroup","select")[1], selector.par=list()) {
   restore.point("nestedSelector")
 
   nf = function(cid) {
@@ -65,7 +65,9 @@ nestedSelector = function(id,selectors, label="", show.first=TRUE, input.type=c(
   nali = make.nali(id,selectors)
 
   child.li = lapply(selectors, function(sel) {
-    res = nf(sel$children)
+    #restore.point("djkfjhdfhkd")
+    if (is.null(sel$children)) return(NULL)
+    res = nf(as.list(sel$children))
     if (is.null(names(res)) & is.list(res)) names(res) = sel$choices
     res
   })
@@ -74,17 +76,18 @@ nestedSelector = function(id,selectors, label="", show.first=TRUE, input.type=c(
   child.js = toJSON(child.li,auto_unbox=TRUE)
 
   div.li = lapply(selectors, function(sel) {
-    res = sel$contents
-    if (is.null(names(res)) & is.list(res)) names(res) = sel$choices
+    if (is.null(sel$contents)) return(NULL);
+    res = as.list(sel$contents)
+    if (is.null(names(res))) names(res) = sel$choices
     res
   })
   names(div.li) = nf(names(selectors))
 
-  div.li = div.li[!sapply(child.li, is.null)]
+  div.li = div.li[!sapply(div.li, is.null)]
   div.js = toJSON(div.li, auto_unbox=TRUE)
 
   select.ui.li = lapply(seq_along(selectors), function(i) {
-    make.selector.select.ui(i=i,id=id,selectors=selectors,show.first=show.first, input.type=input.type, nali=nali)
+    make.selector.select.ui(i=i,id=id,selectors=selectors,show.first=show.first, input.type=input.type, nali=nali, selector.par=selector.par)
   })
   ui.bar = select.ui.li
   names(select.ui.li) = nf(names(selectors))
@@ -115,16 +118,16 @@ nestedSelectorHandler = function(id, fun,...,app=getApp()) {
   eventHandler(eventId="nestedSelectorHandlerEvent", id=id,fun=nestedSelectorHandlerInterface,handler=fun,...,jscript="")
 }
 
-nestedSelectorHandlerInterface = function(eventId,id,shown_sel, values, handler,...) {
+nestedSelectorHandlerInterface = function(eventId,id,shown_sel, values, shown_contents, handler,...) {
   restore.point("nestedSelectorHandlerInterface")
   value = values
   nc = nchar(id)+2
   names(value) = substring(unlist(shown_sel),nc+1)
-  handler(eventId=eventId, id=id, value=value,...)
+  handler(eventId=eventId, id=id, value=value, shown_contents=unlist(shown_contents),...)
 
 }
 
-make.selector.select.ui = function(i,id, selectors, show.first, input.type="radioBtnGroup", nali) {
+make.selector.select.ui = function(i,id, selectors, show.first, input.type="radioBtnGroup", nali, selector.par=selector.par) {
   restore.point("make.selector.select.ui")
   nf = function(cid) {
     if (is.null(cid)) return(NULL)
@@ -152,7 +155,7 @@ make.selector.select.ui = function(i,id, selectors, show.first, input.type="radi
     html = paste0("<select id='",sel_id,"' class='",nali$sel.class,"'  style='",style,"'>\n",options,"\n</select>")
 
   } else {
-    html =radioBtnGroupHTML(id=sel_id,labels = names(sel$choices),values = unlist(sel$choices),div.style = style, div.extra.class=nali$sel.class)
+    html =radioBtnGroupHTML(id=sel_id,labels = names(sel$choices),values = unlist(sel$choices),div.style = style, div.extra.class=paste0(nali$sel.class," btn-group-sm"))
   }
   HTML(html)
 

@@ -5,6 +5,7 @@ example = function() {
   app$ui = fluidPage(HTML(html))
 
   app$ui = freezeHeaderPage(
+    freeze.header = TRUE,
     header = HTML("I am a header"),
     div(style="margin-left: 5%; margin-right:5%;",
       HTML(paste0("content line ", 1:1000,collapse="\n"))
@@ -16,8 +17,16 @@ example = function() {
 #' A page width a header frozen at the top and scrollbar for the content
 #'
 #' @export
-freezeHeaderPage = function(header, ..., header.style="max-height: 5em; overflow: auto; margin-left: 5%; margin-right: 5%; padding-bottom: 5px", content.style="overflow: auto;", content.offset=5) {
+freezeHeaderPage = function(header, ..., header.style="max-height: 5em; overflow: auto; margin-left: 5%; margin-right: 5%; padding-bottom: 5px", body.style="overflow: auto;", content.offset=5, freeze.header = TRUE, header.id="pageHeaderDiv", body.id="pageBodyDiv") {
   content = list(...)
+
+  if (!freeze.header) {
+    header.class=""
+    body.class = ""
+  } else {
+    header.class="FreezePaneHeader"
+    body.class="FreezePaneBody"
+  }
 
   style = tags$style(paste0('
 .FreezePaneHeader {
@@ -44,7 +53,9 @@ $(window).load( function() {
   tagList(
     tags$head(script),
     singleton(tags$head(style)),
-    div(class="FreezePaneHeader", style=header.style, header),
-    div(class="FreezePaneBody", style=content.style, content)
+    div(id=header.id,class=header.class, style=header.style, header),
+    div(id=body.id,class=body.class, style=body.style, content)
   )
 }
+
+
