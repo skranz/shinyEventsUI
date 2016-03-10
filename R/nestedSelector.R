@@ -1,4 +1,4 @@
-
+# TO DO: Add update function for nestedSelector
 
 example = function() {
   library(shinyEvents)
@@ -22,6 +22,12 @@ example = function() {
 
   selUI = nestedSelector(id="sections",selectors=selectors, label="Choose section")
 
+  nestedSelectorHandler(id="sections", function(...) {
+    args = list(...)
+    restore.point("myNestedSelectorHandler")
+    cat("\nin nestedSelectorHandler")
+  })
+
   ui = fluidPage(
     h3("Selector Test"),
     selUI$ui,
@@ -29,7 +35,6 @@ example = function() {
     hidden_div(id="div1_2", p("I am div1_2!")),
     hidden_div(id="div2", p("I am div2!"))
   )
-
   app$ui = ui
   viewApp(app)
 }
@@ -66,7 +71,7 @@ nestedSelector = function(id,selectors, label="", show.first=TRUE, input.type=c(
   })
   names(child.li) = nf(names(selectors))
   child.li = child.li[!sapply(child.li, is.null)]
-  child.js = paste0("\n  var ", nali$selector_child," = ",toJSON(child.li,auto_unbox=TRUE),";")
+  child.js = toJSON(child.li,auto_unbox=TRUE)
 
   div.li = lapply(selectors, function(sel) {
     res = sel$contents
@@ -76,7 +81,7 @@ nestedSelector = function(id,selectors, label="", show.first=TRUE, input.type=c(
   names(div.li) = nf(names(selectors))
 
   div.li = div.li[!sapply(child.li, is.null)]
-  div.js = paste0("\n  var ", nali$selector_div," = ",toJSON(div.li, auto_unbox=TRUE),";")
+  div.js = toJSON(div.li, auto_unbox=TRUE)
 
   select.ui.li = lapply(seq_along(selectors), function(i) {
     make.selector.select.ui(i=i,id=id,selectors=selectors,show.first=show.first, input.type=input.type, nali=nali)
@@ -84,18 +89,8 @@ nestedSelector = function(id,selectors, label="", show.first=TRUE, input.type=c(
   ui.bar = select.ui.li
   names(select.ui.li) = nf(names(selectors))
 
-  spec.js = paste0(
-    child.js,
-    div.js,
-    selector.specific.js(id=id,selectors=selectors,nali=nali),
-    collapse="\n"
-  )
+  spec.js = selector.specific.js(id=id,child.js=child.js,div.js=div.js,nali=nali, show.first=show.first)
 
-  # Add call to show_selector for first selector
-  if (show.first) {
-    code = paste0('show_selector("', nali$sel.ids[[1]], '",',nali$selector_child,',', nali$selector_div,',', nali$shown_seldiv,');')
-    spec.js = paste0(spec.js,"\n",code)
-  }
 
   addShinyRessourcePath()
   head.tags = tagList(
@@ -113,6 +108,21 @@ nestedSelector = function(id,selectors, label="", show.first=TRUE, input.type=c(
   res = list(ui=ui, select.ui.li=select.ui.li, head.tags=head.tags, id=id, selectors=selectors)
 }
 
+#' Add a change handler to a nested selector
+#' @return value a list with the values of all shown selector parts
+#' @export
+nestedSelectorHandler = function(id, fun,...,app=getApp()) {
+  eventHandler(eventId="nestedSelectorHandlerEvent", id=id,fun=nestedSelectorHandlerInterface,handler=fun,...,jscript="")
+}
+
+nestedSelectorHandlerInterface = function(eventId,id,shown_sel, values, handler,...) {
+  restore.point("nestedSelectorHandlerInterface")
+  value = values
+  nc = nchar(id)+2
+  names(value) = substring(unlist(shown_sel),nc+1)
+  handler(eventId=eventId, id=id, value=value,...)
+
+}
 
 make.selector.select.ui = function(i,id, selectors, show.first, input.type="radioBtnGroup", nali) {
   restore.point("make.selector.select.ui")
@@ -148,15 +158,21 @@ make.selector.select.ui = function(i,id, selectors, show.first, input.type="radi
 
 }
 
-selector.specific.js = function(id,selectors, nali = make.nali(id,selectors)) {
+selector.specific.js = function(id,child.js,div.js, nali, show.first=TRUE) {
+  restore.point("selector.specific.js")
+
   js = paste0('
-  var ',nali$shown_seldiv,' = [];
+  var ',nali$so,' = new nestedSelectorObject(',child.js,',',div.js,');
 
   $(".',nali$sel.class,'").on("change", function() {
-    hide_seldiv_onchange(this.id, ',nali$shown_seldiv,');
-    show_selector(this.id, ',nali$selector_child,',', nali$selector_div,',', nali$shown_seldiv,');
+    //alert("onchange");
+    selectorPartOnChange(this,',nali$so,',"',id,'");
   });
   ')
+  # Add call to show_selector for first selector
+  if (show.first) {
+    js = paste0(js,'\nshow_selector("', nali$sel.ids[[1]], '",',nali$so,');')
+  }
   js
 }
 
@@ -169,9 +185,7 @@ make.nali = function(id, selectors) {
   list(
     sel.ids = sel.ids,
     sel.class = paste0(id,"__selector_class"),
-    selector_child = paste0(id,"__selector_child"),
-    selector_div = paste0(id,"__selector_div"),
-    shown_seldiv = paste0(id,"__shown_seldiv")
+    so = paste0(id,"__selector_object")
   )
 }
 

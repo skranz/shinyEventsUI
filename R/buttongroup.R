@@ -2,7 +2,6 @@ examples.radioBtnGroup = function() {
   app = eventsApp()
 
   app$ui = fluidPage(
-    buttonHandlerEvents(),
     p("A radio button group"),
     actionButton("mybtn","Set value = 2"),
     radioBtnGroup(id="myradio",c("A","B","C")),
@@ -17,14 +16,14 @@ examples.radioBtnGroup = function() {
     restore.point("myradioHandler")
     cat("\nradioBtnGroupHandler...", value)
     setText("mytext",value)
-
   })
   viewApp(app)
 }
 
+
 #' A button group that acts like a radio button group
 #'
-#' use radioBtnGroupgHandler to add a handler for a value change
+#' use radioBtnGroupHandler to add a handler for a value change
 #' @export
 radioBtnGroup = function(id, labels,values=seq_along(labels), handler=NULL,...) {
   restore.point("radioBtnGroup")
@@ -33,15 +32,7 @@ radioBtnGroup = function(id, labels,values=seq_along(labels), handler=NULL,...) 
   inds = seq_along(values)
 
   html = radioBtnGroupHTML(id,labels,values,...)
-  script = radioBtnGroupScript()
-  registerEventIdHandler("radioBtnGroupChange")
-
-  addShinyRessourcePath()
-
-  ui = tagList(
-    HTML(html),
-    tags$script(HTML(script))
-  )
+  ui = HTML(html)
 
   if (!is.null(handler)) {
     radioBtnGroupHandler(id,handler,...)
@@ -49,10 +40,13 @@ radioBtnGroup = function(id, labels,values=seq_along(labels), handler=NULL,...) 
   ui
 }
 
-# more efficient version of button handler via global eventId handler
+#' Add change hangdler to a radio button group
+#' @return value the value of the selected button
+#' @export
 radioBtnGroupHandler = function(id, fun,..., eventId="radioBtnGroupChange", app=getApp()) {
   restore.point("buttonHandler")
-  eventHandler(eventId=eventId,id=id,fun=fun,...,app=app)
+  eventHandler(eventId=eventId,id=id,fun=fun,...,jscript=radioBtnGroupScript(),
+app=app)
 }
 
 

@@ -7,6 +7,6 @@
 radioBtnGroup(id, labels, values = seq_along(labels), handler = NULL, ...)
 }
 \description{
-use radioBtnGroupgHandler to add a handler for a value change
+use radioBtnGroupHandler to add a handler for a value change
 }
 
