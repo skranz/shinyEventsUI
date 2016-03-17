@@ -20,7 +20,7 @@ example = function() {
     )
   )
 
-  selUI = nestedSelector(id="sections",selectors=selectors, label="Choose section")
+  selUI = nestedSelector(id="sections",selectors=selectors, label="Choose section", btn.size="sm")
 
   nestedSelectorHandler(id="sections", function(...) {
     args = list(...)
@@ -50,7 +50,7 @@ hidden_div = function(id,...,style="") {
 
 #' Nested select menus that show associated div elements
 #' @export
-nestedSelector = function(id,selectors, label="", show.first=TRUE, input.type=c("radioBtnGroup","select")[1], selector.par=list()) {
+nestedSelector = function(id,selectors, label="", show.first=TRUE, input.type=c("radioBtnGroup","select")[1], btn.size="sm", selector.par=list()) {
   restore.point("nestedSelector")
 
   nf = function(cid) {
@@ -87,7 +87,7 @@ nestedSelector = function(id,selectors, label="", show.first=TRUE, input.type=c(
   div.js = toJSON(div.li, auto_unbox=TRUE)
 
   select.ui.li = lapply(seq_along(selectors), function(i) {
-    make.selector.select.ui(i=i,id=id,selectors=selectors,show.first=show.first, input.type=input.type, nali=nali, selector.par=selector.par)
+    make.selector.select.ui(i=i,id=id,selectors=selectors,show.first=show.first, input.type=input.type, nali=nali, selector.par=selector.par, btn.size=btn.size)
   })
   ui.bar = select.ui.li
   names(select.ui.li) = nf(names(selectors))
@@ -104,8 +104,8 @@ nestedSelector = function(id,selectors, label="", show.first=TRUE, input.type=c(
   ui = tagList(
     head.tags,
     ui.bar,
-    tags$script(HTML(spec.js)),
-    tags$script(HTML(radioBtnGroupScript()))
+    bottomScript(HTML(spec.js)),
+    bottomScript(HTML(radioBtnGroupScript()))
   )
 
   res = list(ui=ui, select.ui.li=select.ui.li, head.tags=head.tags, id=id, selectors=selectors)
@@ -127,7 +127,7 @@ nestedSelectorHandlerInterface = function(eventId,id,shown_sel, values, shown_co
 
 }
 
-make.selector.select.ui = function(i,id, selectors, show.first, input.type="radioBtnGroup", nali, selector.par=selector.par) {
+make.selector.select.ui = function(i,id, selectors, show.first, input.type="radioBtnGroup", nali, selector.par=selector.par, btn.size="sm") {
   restore.point("make.selector.select.ui")
   nf = function(cid) {
     if (is.null(cid)) return(NULL)
@@ -155,7 +155,7 @@ make.selector.select.ui = function(i,id, selectors, show.first, input.type="radi
     html = paste0("<select id='",sel_id,"' class='",nali$sel.class,"'  style='",style,"'>\n",options,"\n</select>")
 
   } else {
-    html =radioBtnGroupHTML(id=sel_id,labels = names(sel$choices),values = unlist(sel$choices),div.style = style, div.extra.class=paste0(nali$sel.class," btn-group-sm"))
+    html =radioBtnGroupHTML(id=sel_id,labels = names(sel$choices),values = unlist(sel$choices),div.style = style, div.extra.class=paste0(nali$sel.class), btn.size=btn.size)
   }
   HTML(html)
 

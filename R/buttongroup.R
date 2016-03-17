@@ -25,7 +25,7 @@ examples.radioBtnGroup = function() {
 #'
 #' use radioBtnGroupHandler to add a handler for a value change
 #' @export
-radioBtnGroup = function(id, labels,values=seq_along(labels), handler=NULL, div.style="", div.extra.class="btn-group-sm",btn.style="",...) {
+radioBtnGroup = function(id, labels,values=seq_along(labels), handler=NULL, div.style="", div.extra.class="", btn.size = "xs",btn.style="",...) {
   restore.point("radioBtnGroup")
 
   addShinyRessourcePath()
@@ -54,7 +54,7 @@ updateRadioBtnGroup = function(session=app$session,id,value, app=getApp()) {
   session$sendCustomMessage(type = 'updateRadioBtnGroup',message = list(id=id, value=value))
 }
 
-radioBtnGroupHTML = function(id, labels, values=seq_along(labels), init.value=values[1], div.style="", div.extra.class=NULL, btn.style="", register.with.shiny=TRUE,...) {
+radioBtnGroupHTML = function(id, labels, values=seq_along(labels), init.value=values[1], div.style="", div.extra.class="", btn.size="sm", btn.style="", register.with.shiny=TRUE,...) {
 
   restore.point("radioBtnGroupHTML")
 
@@ -67,7 +67,7 @@ radioBtnGroupHTML = function(id, labels, values=seq_along(labels), init.value=va
   }
 
   div.class = "btn-group asradio-btn-group"
-  if (!is.null(div.extra.class)) div.class = paste(div.class, div.extra.class)
+  if (!is.null(div.extra.class)) div.class = paste(div.class, div.extra.class, paste0("btn-group-",btn.size))
 
 
   if (is.null(init.value)) {

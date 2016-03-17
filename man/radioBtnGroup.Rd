@@ -4,7 +4,9 @@
 \alias{radioBtnGroup}
 \title{A button group that acts like a radio button group}
 \usage{
-radioBtnGroup(id, labels, values = seq_along(labels), handler = NULL, ...)
+radioBtnGroup(id, labels, values = seq_along(labels), handler = NULL,
+  div.style = "", div.extra.class = "", btn.size = "xs", btn.style = "",
+  ...)
 }
 \description{
 use radioBtnGroupHandler to add a handler for a value change
