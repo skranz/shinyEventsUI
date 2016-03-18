@@ -44,7 +44,7 @@ radioBtnGroup = function(id, labels,values=seq_along(labels), handler=NULL, div.
 #' @return value the value of the selected button
 #' @export
 radioBtnGroupHandler = function(id, fun,..., eventId="radioBtnGroupChange", app=getApp()) {
-  restore.point("buttonHandler")
+  restore.point("radioBtnGroupHandler")
   eventHandler(eventId=eventId,id=id,fun=fun,...,jscript=radioBtnGroupScript(),
 app=app)
 }

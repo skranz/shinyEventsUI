@@ -3,6 +3,9 @@
 example = function() {
   library(shinyEvents)
 
+
+
+
   app = eventsApp()
   selectors = list(
     sections = list(
