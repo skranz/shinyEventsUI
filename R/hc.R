@@ -11,7 +11,63 @@ example = function() {
       HTML(paste0("content line ", 1:1000,collapse="\n"))
     )
   )
+  app$ui = bootstrapPage(
+    p("I am a page"),
+    div(style = "position: fixed; top: 50; height: 500;",
+      fixedHeaderDiv(
+        header = HTML("I am a header"),
+        div(style="margin-left: 5%; margin-right:5%;",
+          HTML(paste0("content line ", 1:10,collapse="\n"))
+        )
+      )
+    )
+  )
+
   viewApp(app)
+}
+
+# does not work...
+fixedHeaderDiv = function(header, ..., header.style="max-height: 5em; overflow: auto; margin-left: 5%; margin-right: 5%; padding-bottom: 5px", body.style="overflow: auto;", content.offset=5, freeze.header = TRUE, header.id="pageHeaderDiv", body.id="pageBodyDiv") {
+
+  content = list(...)
+  restore.point("fixedHeaderDiv")
+
+  if (!freeze.header) {
+    header.class=""
+    body.class = ""
+  } else {
+    header.class="FreezePaneHeader"
+    body.class="FreezePaneBody"
+  }
+
+  style = tags$style(paste0('
+.FreezePaneHeader {
+  position: absolute; top:0; left: 0; width: 100%;
+}
+
+.FreezePaneBody {
+  position: absolute; top:50px; bottom: 0em; left:0; width:100%;
+}
+'))
+  script =HTML(paste0('
+function resizeFreezePane() {
+  var height = $(".FreezePaneHeader").outerHeight();
+  $(".FreezePaneBody").css("top",height);
+}
+$(window).resize(function() {
+  resizeFreezePane();
+});
+$(window).load( function() {
+  resizeFreezePane();
+});
+'
+  ))
+  tagList(
+    singleton(style),
+    div(id=header.id,class=header.class, style=header.style, header),
+    div(id=body.id,class=body.class, style=body.style, content),
+    singletonBottomScript(script)
+  )
 }
 
 #' A page width a header frozen at the top and scrollbar for the content

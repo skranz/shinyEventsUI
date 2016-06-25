@@ -4,20 +4,23 @@ examples.radioBtnGroup = function() {
   app$ui = fluidPage(
     p("A radio button group"),
     actionButton("mybtn","Set value = 2"),
-    radioBtnGroup(id="myradio",c("A","B","C")),
-    textOutput("mytext")
+    radioBtnGroup(id="myradio",c("A","B","C"),values = c("A","B","C"),  show.hide.containers=c("divA","divB","divC")),
+    textOutput("mytext"),
+    div(id="divA", "divA"),
+    hidden_div(id="divB", "divB"),
+    hidden_div(id="divC", "divC")
   )
   buttonHandler("mybtn", function(...) {
     cat("\nupdate radio value...\n")
-    updateRadioBtnGroup(id="myradio",value=2)
+    updateRadioBtnGroup(id="myradio",value="B")
   })
+  viewApp(app)
   radioBtnGroupHandler("myradio", function(value,...) {
     args = list(...)
     restore.point("myradioHandler")
     cat("\nradioBtnGroupHandler...", value)
     setText("mytext",value)
   })
-  viewApp(app)
 }
 
 
@@ -25,7 +28,7 @@ examples.radioBtnGroup = function() {
 #'
 #' use radioBtnGroupHandler to add a handler for a value change
 #' @export
-radioBtnGroup = function(id, labels,values=seq_along(labels), handler=NULL, div.style="", div.extra.class="", btn.size = "xs",btn.style="",...) {
+radioBtnGroup = function(id, labels,values=seq_along(labels), handler=NULL, div.style="", div.extra.class="", btn.size = "xs",btn.style="", show.hide.containers=NULL,...) {
   restore.point("radioBtnGroup")
 
   addShinyRessourcePath()
@@ -37,6 +40,12 @@ radioBtnGroup = function(id, labels,values=seq_along(labels), handler=NULL, div.
   if (!is.null(handler)) {
     radioBtnGroupHandler(id,handler,...)
   }
+  if (!is.null(show.hide.containers)) {
+    js = radioBtnGroupShowHideJS(id = id, values=values, show.hide.containers)
+    js2 = HTML(radioBtnGroupScript())
+    ui = tagList(ui, bottomScript(HTML(js)), singletonBottomScript(js2))
+  }
+
   ui
 }
 
@@ -139,4 +148,29 @@ Shiny.addCustomMessageHandler("updateRadioBtnGroup",
 
   '
   script
+}
+
+radioBtnGroupShowHideJS = function(id, values, container.id) {
+  restore.point("radioBtnGroupShowHideJS")
+
+  divs = as.list(container.id)
+  names(divs) = values
+
+
+  divs = toJSON(divs)
+  paste0('
+  $("#',id,'").change(function(e){
+    var value = $(this).attr("data-value");
+    var divs = ',divs,';
+    for (var key in divs) {
+      var div = divs[key];
+      if (key != value) {
+        $("#"+div).hide();
+      } else {
+        $("#"+div).show().css("visibility","visible");
+      }
+    }
+    //alert("Change value = "+ value);
+  });
+  ')
 }

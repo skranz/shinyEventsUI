@@ -195,8 +195,11 @@ make.nali = function(id, selectors) {
   )
 }
 
+.onLoad = function(...) {
+  addShinyEventsUIRessourcePath()
+}
 
-addShinyRessourcePath = function() {
+addShinyEventsUIRessourcePath = addShinyRessourcePath = function() {
 
   www.dir = system.file('www', package='shinyEventsUI')
   # init ressource paths
