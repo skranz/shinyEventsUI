@@ -6,7 +6,7 @@
 \usage{
 radioBtnGroup(id, labels, values = seq_along(labels), handler = NULL,
   div.style = "", div.extra.class = "", btn.size = "xs", btn.style = "",
-  show.hide.containers = NULL, ...)
+  panes = show.hide.containers, show.hide.containers = NULL, ...)
 }
 \description{
 use radioBtnGroupHandler to add a handler for a value change

@@ -4,7 +4,7 @@
 \alias{resizeLayout}
 \title{Resize a jqueryLayout. May be useful if inner html has been dynamically changed and we have size="auto"}
 \usage{
-resizeLayout(layout.var)
+resizeLayout(id, layout.var = paste0(id, "LayoutVar"))
 }
 \description{
 Resize a jqueryLayout. May be useful if inner html has been dynamically changed and we have size="auto"
