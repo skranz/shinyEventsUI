@@ -53,7 +53,7 @@ hidden_div = function(id,...,style="") {
 
 #' Nested select menus that show associated div elements
 #' @export
-nestedSelector = function(id,selectors, label="", show.first=TRUE, input.type=c("radioBtnGroup","select")[1], btn.size="sm", selector.par=list()) {
+nestedSelector = function(id,selectors, label="", show.first=TRUE, input.type=c("radioBtnGroup","select")[1], btn.size="sm", selector.par=list(), scroll.top.sel=NULL) {
   restore.point("nestedSelector")
 
   nf = function(cid) {
@@ -95,7 +95,7 @@ nestedSelector = function(id,selectors, label="", show.first=TRUE, input.type=c(
   ui.bar = select.ui.li
   names(select.ui.li) = nf(names(selectors))
 
-  spec.js = selector.specific.js(id=id,child.js=child.js,div.js=div.js,nali=nali, show.first=show.first)
+  spec.js = selector.specific.js(id=id,child.js=child.js,div.js=div.js,nali=nali, show.first=show.first,scroll.top.sel=scroll.top.sel)
 
 
   addShinyRessourcePath()
@@ -164,8 +164,13 @@ make.selector.select.ui = function(i,id, selectors, show.first, input.type="radi
 
 }
 
-selector.specific.js = function(id,child.js,div.js, nali, show.first=TRUE) {
+selector.specific.js = function(id,child.js,div.js, nali, show.first=TRUE, scroll.top.sel = NULL) {
   restore.point("selector.specific.js")
+
+  scroll.top = ""
+  if (!is.null(scroll.top.sel)) {
+    scroll.top = paste0('$("', scroll.top.sel,'").scrollTop(0);')
+  }
 
   js = paste0('
   var ',nali$so,' = new nestedSelectorObject(',child.js,',',div.js,');
@@ -173,6 +178,7 @@ selector.specific.js = function(id,child.js,div.js, nali, show.first=TRUE) {
   $(".',nali$sel.class,'").on("change", function() {
     //alert("onchange");
     selectorPartOnChange(this,',nali$so,',"',id,'");
+    ',scroll.top,'
   });
   ')
   # Add call to show_selector for first selector
