@@ -6,7 +6,7 @@
 \usage{
 nestedSelector(id, selectors, label = "", show.first = TRUE,
   input.type = c("radioBtnGroup", "select")[1], btn.size = "sm",
-  selector.par = list())
+  selector.par = list(), scroll.top.sel = NULL)
 }
 \description{
 Nested select menus that show associated div elements

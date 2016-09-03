@@ -288,6 +288,9 @@ jqueryLayoutHeader = function(style=NULL) {
 
 }
 
+jqueryPaneOptions = function(resizable=TRUE, closable=TRUE, slideable=TRUE, spacing_open=10, spacing_closed=10) {
+  nlist(resizable, closable, slideable, spacing_open, spacing_closed)
+}
 
 #' A jqueryLayoutPage
 #' @export
@@ -302,12 +305,18 @@ jqueryLayoutPanes = function(id = NULL, center=NULL, north=NULL,west=NULL, east=
   }
 
 
+
   for (dir in names(panes)) {
     if (!is.null(panes[[dir]])) {
       class = paste0("ui-layout-",dir)
       pane.id = paste0(id,"_", dir)
       panes[[dir]] = div(class=class, id=pane.id,panes[[dir]])
     }
+  }
+
+  if (is.list(json.opts)) {
+    json.opts = toJSON(json.opts)
+    json.opts = substring(json.opts,2,nchar(json.opts))
   }
 
   if (js.do.layout) {
@@ -364,14 +373,11 @@ resizeLayout = function(id, layout.var=paste0(id,"LayoutVar")) {
 
 #' A jqueryLayoutPage
 #' @export
-jqueryLayoutPage = function(center=NULL, north=NULL,west=NULL, east=NULL, south=NULL, panes=list(center=center, north=north, west=west, east=east, south=south), json.opts="", style=NULL) {
+jqueryLayoutPage = function(id="mainPane",center=NULL, north=NULL,west=NULL, east=NULL, south=NULL, panes=list(center=center, north=north, west=west, east=east, south=south), json.opts="", style=NULL,...) {
   restore.point("jqueryLayoutPage")
 
 
-  for (dir in names(panes)) {
-    if (!is.null(panes[[dir]]))
-      panes[[dir]] = div(class=paste0("ui-layout-",dir),panes[[dir]])
-  }
+  panes = jqueryLayoutPanes(id=id, panes=panes,json.opts=json.opts,style = style)
 
   #json.opts = toJSON(options,auto_unbox = TRUE)
 
@@ -387,7 +393,8 @@ $(document).ready(function () {
     jqueryLayoutHeader(),
     tags$head(tags$script(HTML(js))),
     style,
-    panes
+    panes,
+    ...
   )
 
 }

@@ -2,10 +2,6 @@
 
 example = function() {
   library(shinyEvents)
-
-
-
-
   app = eventsApp()
   selectors = list(
     sections = list(
@@ -199,19 +195,4 @@ make.nali = function(id, selectors) {
     sel.class = paste0(id,"__selector_class"),
     so = paste0(id,"__selector_object")
   )
-}
-
-.onLoad = function(...) {
-  addShinyEventsUIRessourcePath()
-}
-
-addShinyEventsUIRessourcePath = addShinyRessourcePath = function() {
-
-  www.dir = system.file('www', package='shinyEventsUI')
-  # init ressource paths
-  shiny::addResourcePath(
-    prefix = 'shinyEventsUI',
-    directoryPath = www.dir
-  )
-
 }
