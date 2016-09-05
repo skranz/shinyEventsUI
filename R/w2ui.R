@@ -16,7 +16,7 @@ examples.xw2ui = function() {
         div(id="tab3div", "tab3"),
         div(id="tab4div", "tab4")
       ),
-      actionButton("Hi!")
+      actionButton("btn","Add")
     )
   )
   clickHandler("myTabs", function(...) {
@@ -32,6 +32,9 @@ examples.xw2ui = function() {
     cat("closed!")
   })
 
+  buttonHandler("btn", function(...) {
+    w2tabs.add("myTabs",tabs=list(list(id="newTab",caption="New Tab", div_id="tab4div", closable=TRUE)))
+  })
 
   viewApp(app)
 }
@@ -143,10 +146,14 @@ set.active.given.tabs = function(active, tabs) {
   tabs[[1]]$id
 }
 
-w2tabs.add = function(id, tabs) {
+w2tabs.add = function(id, tabs=list(tab), tab) {
   callJS("xw2ui.tabs_add",id=id,tabs=tabs)
 }
 
+
+w2tabs.close = function(id, tabId) {
+  callJS(paste0("w2ui.",id,".remove"),tabId)
+}
 
 
 w2tabs = function(id, active=1, tabs=NULL, js.on.render = NULL, add.header=TRUE) {

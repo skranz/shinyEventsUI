@@ -7,7 +7,7 @@ var xw2ui = {
     }
     var tabs_divs = {};
     for (i=0; i < x.tabs.length; i++) {
-      tabs_divs[tabs_id[i]] = x.tabs[i].div_id;
+      tabs_divs[x.tabs_id[i]] = x.tabs[i].div_id;
     }
     x.show_hide = new AutoShowHide(tabs_divs);
   },

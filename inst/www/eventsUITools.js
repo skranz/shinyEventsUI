@@ -19,12 +19,11 @@ AutoShowHide.prototype.remove = function(id, hide) {
 AutoShowHide.prototype.show = function(id) {
   var x = this.x;
   Object.keys(x).forEach(function(key) {
-    sel = "#"+x[key];
-    if (key == id) {
-      $(sel).css({display: "block", visibility: "visible"});
-    } else {
-      $(sel).css({display: "none", visibility: "hidden"});
+    if (key !== id) {
+      $("#"+x[key]).css({display: "none", visibility: "hidden"});
     }
   });
+  $("#"+x[id]).css({display: "block", visibility: "visible"});
+
 };
 
