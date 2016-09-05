@@ -6,7 +6,13 @@ AutoShowHide.prototype.add = function(id, container) {
   this.x[id] = container;
 };
 
-AutoShowHide.prototype.remove = function(id) {
+AutoShowHide.prototype.remove = function(id, hide) {
+  var hide = (typeof hide !== 'undefined') ?  hide : true;
+
+  if (hide) {
+    sel = "#"+this.x[id];
+    $(sel).css({display: "none", visibility: "hidden"});
+  }
   delete this.x[id];
 };
 

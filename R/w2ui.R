@@ -1,3 +1,43 @@
+examples.xw2ui = function() {
+  restore.point.options(display.restore.point = TRUE)
+  library(shinyEventsUI)
+  app = eventsApp()
+  library(dplyr)
+  tabs = xw2tabs(id="myTabs",tabs=data_frame(id=paste0("tab",1:4),caption=paste0("tab",1:4), closable=TRUE,div_id = paste0("tab",1:4,"div")))
+
+
+  app$ui = bootstrapPage(
+    w2header(),
+    div(
+      tabs,
+      div(id = "mainDiv",
+        div(id="tab1div", "tab1"),
+        div(id="tab2div", "tab2"),
+        div(id="tab3div", "tab3"),
+        div(id="tab4div", "tab4")
+      ),
+      actionButton("Hi!")
+    )
+  )
+  clickHandler("myTabs", function(...) {
+    args = list(...)
+    restore.point("dbczudgvuzfgvzf")
+    resizeLayout("myPanes")
+    cat("clicked! ",sample(1000,1))
+  })
+
+  eventHandler("close", id="myTabs", function(...) {
+    args = list(...)
+    restore.point("tabClosedEvent")
+    cat("closed!")
+  })
+
+
+  viewApp(app)
+}
+
+
+
 examples.w2ui = function() {
   restore.point.options(display.restore.point = TRUE)
   library(shinyEventsUI)
@@ -67,7 +107,7 @@ examples.w2ui = function() {
     js.on.render="myPanesLayoutVar.resizeAll();")
 
   library(dplyr)
-  tabs = w2tabs(id="myTabs",divs.id = paste0("tab",1:4,"div"),tabs=data_frame(id=paste0("tab",1:4),caption=paste0("tab",1:4), closable=TRUE))
+  tabs = w2tabs(id="myTabs",tabs=data_frame(id=paste0("tab",1:4),caption=paste0("tab",1:4), closable=TRUE, div_id = paste0("tab",1:4,"div")))
 
 
   app$ui = jqueryLayoutPage(id="myPanes", json.opts=json.opts,
@@ -103,7 +143,13 @@ set.active.given.tabs = function(active, tabs) {
   tabs[[1]]$id
 }
 
-w2tabs = function(id, active=1, tabs=NULL, divs.id=NULL, js.on.render = NULL, add.header=TRUE) {
+w2tabs.add = function(id, tabs) {
+  callJS("xw2ui.tabs_add",id=id,tabs=tabs)
+}
+
+
+
+w2tabs = function(id, active=1, tabs=NULL, js.on.render = NULL, add.header=TRUE) {
   restore.point("w2tabs")
 
   if (is.character(tabs)) {
@@ -115,74 +161,12 @@ w2tabs = function(id, active=1, tabs=NULL, divs.id=NULL, js.on.render = NULL, ad
     li = list(name=id,active=active,tabs=tabs)
     json = toJSON(li,auto_unbox = TRUE,dataframe = "rows")
   }
-  eventId = "clickEvent"
-
-  use.sh = !is.null(divs.id)
-
-  tab.obj = paste0(id,"_TabObject")
-  if (is.data.frame(tabs)) {
-    tabs.id = tabs$id
-  } else {
-    tabs.id = sapply(tabs, function(tab) tab$id)
-  }
-  if (length(tabs.id)==0) {
-    tabs.id.json = "[]"
-  } else {
-    tabs.id.json = toJSON(tabs.id)
-  }
-
-  if (use.sh) {
-    names(divs.id) = tabs.id
-    ids.json = toJSON(as.list(divs.id))
-    post.code = paste0('
-      ',tab.obj, '.sh = new AutoShowHide(',ids.json,');'
-    )
-    if (!is.null(active)) {
-      post.code = paste0(post.code,"\n",
-        tab.obj,'.sh.show("',active,'");'
-      )
-    }
-    click.code = paste0(tab.obj,'.sh.show(id);')
-  } else {
-    post.code = ""
-    click.code = ""
-  }
-
   js = paste0('
     $(function () {
-      var ', tab.obj, ' = {tabs: ', tabs.id.json,'};
-      $("#',id,'").w2tabs(',json,');
-      w2ui.',id,'.on("click", function(e) {
-        var id = e.target;
-      ',click.code,'
-        Shiny.onInputChange("',eventId,'", {eventId: "',eventId,'", id: id, class: "w2tab", tabsetId: "',id,'", nonce: Math.random()});
-      });
-      w2ui.',id,'.on("close", function(e) {
-        var id = e.target;
-        var tabs = ',tab.obj,'.tabs;
-        var tabInd = tabs.indexOf(id);
-        var activeId = w2ui["',id,'"].active;
-        var newTabId = id;
-        if (activeId == id) {
-          var newTabInd = tabInd-1;
-          if (tabInd < tabs.length-1) {
-            newTabInd = tabInd +1;
-          }
-          newTabId = null;
-          if (newTabInd > -1) {
-            newTabId = tabs[newTabInd];
-            //w2ui["',id,'"].set(newTabId);
-            w2ui["',id,'"].click(newTabId);
-          }
-        }
-        tabs.splice(tabInd,1);
-
-        Shiny.onInputChange("close", {eventId: "close", id: id, class: "w2tab", tabsetId: "',id,'", newTabId: newTabId, nonce: Math.random()});
-      });
-      ',post.code,'
+      xw2ui.xw2tabs(',json,', true);
       ',js.on.render,'
     });
-   ')
+  ')
   tagList(
     if (add.header) w2header() else NULL,
     singleton(tags$head(tags$script(type="text/javascript",src="shinyEventsUI/eventsUITools.js"))),
@@ -202,7 +186,8 @@ w2header = function(...) {
   restore.point("w2uiHeader")
   tagList(
     singleton(tags$head(tags$link(href="shinyEventsUI/w2ui.min.css", type="text/css", rel="stylesheet"))),
-    singleton(tags$head(tags$script(type="text/javascript",src="shinyEventsUI/w2ui.min.js")))
+    singleton(tags$head(tags$script(type="text/javascript",src="shinyEventsUI/w2ui.min.js"))),
+    singleton(tags$head(tags$script(type="text/javascript",src="shinyEventsUI/xw2ui.js")))
 
   )
 }
@@ -211,8 +196,8 @@ w2nodes = function(id, text = "", img=c("icon-page","icon-folder")[1], expanded 
   data_frame(id=id, text=text, img=img, expanded=expanded, selected=selected, nodes=nodes)
 }
 
-clickHandler = function(id, fun,...) {
-  eventHandler(eventId="clickEvent", id=id, fun=fun,...)
+clickHandler = function(id, fun,..., eventId="click") {
+  eventHandler(eventId=eventId, id=id, fun=fun,...)
 }
 
 w2sidebar = function(id, img=NULL,nodes=NULL,..., width="100%", height="100%", js.on.render="", add.header=TRUE) {
