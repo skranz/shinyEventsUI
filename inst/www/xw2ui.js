@@ -1,5 +1,6 @@
 var xw2ui = {
-  tabs_add: function(id, tabs) {
+  tabs_add: function(id, tabs, select) {
+    var select = (typeof select !== 'undefined') ?  select : true;
     var x = w2ui[id];
     x.add(tabs);
     for (i=0; i < tabs.length; i++) {
@@ -10,6 +11,10 @@ var xw2ui = {
       tabs_divs[x.tabs_id[i]] = x.tabs[i].div_id;
     }
     x.show_hide = new AutoShowHide(tabs_divs);
+    if (select & tabs.length >0) {
+      x.select(tabs[0].id);
+      x.show_hide.show(tabs[0].id);
+    }
   },
 
   xw2tabs: function(x, registerShinyEvents) {

@@ -2287,7 +2287,10 @@ button.btn-red.clicked {
 .w2ui-sidebar .w2ui-sidebar-div .w2ui-node-caption {
   white-space: nowrap;
   padding: 5px 0px 5px 3px;
+  /*
   margin: 1px 0px 1px 22px;
+  */
+  margin: 1px 0px 1px 5px;
   position: relative;
   z-index: 1;
   font-size: 12px;
@@ -2316,6 +2319,18 @@ button.btn-red.clicked {
   overflow: hidden;
 }
 .w2ui-sidebar .w2ui-sidebar-div td.w2ui-node-dots {
+  width: 8px;
+  padding: 0px 0px 1px 2px;
+  text-align: center;
+}
+.w2ui-sidebar .w2ui-sidebar-div td.w2ui-node-dots .w2ui-expand {
+  width: 12px;
+  margin-top: -3px;
+  pointer-events: auto;
+}
+
+/*
+.w2ui-sidebar .w2ui-sidebar-div td.w2ui-node-dots {
   width: 18px;
   padding: 0px 0px 1px 7px;
   text-align: center;
@@ -2325,6 +2340,7 @@ button.btn-red.clicked {
   margin-top: -3px;
   pointer-events: auto;
 }
+*/
 .w2ui-sidebar .w2ui-sidebar-div td.w2ui-node-data {
   padding: 1px 1px 3px 1px;
 }

@@ -33,6 +33,7 @@ examples.xw2ui = function() {
   })
 
   buttonHandler("btn", function(...) {
+    w2tabs.select("myTabs","tab2")
     w2tabs.add("myTabs",tabs=list(list(id="newTab",caption="New Tab", div_id="tab4div", closable=TRUE)))
   })
 
@@ -146,16 +147,27 @@ set.active.given.tabs = function(active, tabs) {
   tabs[[1]]$id
 }
 
-w2tabs.add = function(id, tabs=list(tab), tab) {
-  callJS("xw2ui.tabs_add",id=id,tabs=tabs)
+w2tabs.select = function(id, tabId) {
+  callJS(paste0('w2ui["',id,'"].select'),tabId)
+  callJS(paste0('w2ui["',id,'"].show_hide.show'),tabId)
+}
+
+#' Add a w2ui tab
+#' @export
+w2tabs.add = function(id, tabs=list(tab), tab, select=TRUE) {
+  callJS("xw2ui.tabs_add",id=id,tabs=tabs, select=select)
 }
 
 
+#' Close a w2ui tab
+#' @export
 w2tabs.close = function(id, tabId) {
   callJS(paste0("w2ui.",id,".remove"),tabId)
 }
 
 
+#' Tabs. See w2ui docs
+#' @export
 w2tabs = function(id, active=1, tabs=NULL, js.on.render = NULL, add.header=TRUE) {
   restore.point("w2tabs")
 
@@ -183,6 +195,7 @@ w2tabs = function(id, active=1, tabs=NULL, js.on.render = NULL, add.header=TRUE)
 }
 
 
+#' @export
 thinHR = function() {
   hr(style="padding: 0; margin:0; height=1px; color: #888888")
 }
@@ -199,14 +212,18 @@ w2header = function(...) {
   )
 }
 
+#' @export
 w2nodes = function(id, text = "", img=c("icon-page","icon-folder")[1], expanded = FALSE, icon=NULL, selected=FALSE, nodes=NULL, as.data.frame = is.null(nodes)) {
   data_frame(id=id, text=text, img=img, expanded=expanded, selected=selected, nodes=nodes)
 }
 
+#' @export
 clickHandler = function(id, fun,..., eventId="click") {
   eventHandler(eventId=eventId, id=id, fun=fun,...)
 }
 
+#' Sidebar. See w2ui docs
+#' @export
 w2sidebar = function(id, img=NULL,nodes=NULL,..., width="100%", height="100%", js.on.render="", add.header=TRUE) {
   restore.point("w2Sidebar")
 
@@ -237,6 +254,8 @@ w2sidebar = function(id, img=NULL,nodes=NULL,..., width="100%", height="100%", j
 
 }
 
+#' Toolbar or menubar. See w2ui docs
+#' @export
 w2toolbar = function(id, items=NULL, js.on.render = NULL, add.header=TRUE) {
   restore.point("w2toolbar")
 
