@@ -16,7 +16,7 @@ function show_selector(id,so) {
   // show selector itself
   so.shown_seldiv.push(id);
   so.shown_is_sel.push(true);
-  $("#"+id).show();
+  $("#"+id).show().trigger("shown");
   //alert("show_selector: "+id+" value "+value);
 
   // show divs
@@ -30,14 +30,15 @@ function show_selector(id,so) {
           so.shown_seldiv.push(divid[i]);
           so.shown_is_sel.push(false);
 
-          $("#"+divid[i]).show();
+          $("#"+divid[i]).show().trigger("shown");
+
         }
       } else {
         //alert("div = "+divid);
         so.shown_seldiv.push(divid);
         so.shown_is_sel.push(false);
 
-        $("#"+divid).show();
+        $("#"+divid).show().trigger("shown");
       }
 
     }
@@ -64,7 +65,7 @@ function hide_seldiv_onchange(id,  so) {
     if (hide_id == id) {
       break;
     }
-    $("#"+hide_id).hide();
+    $("#"+hide_id).hide().trigger("hidden");
   }
 }
 

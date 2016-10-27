@@ -23,12 +23,12 @@ function show_selector(id,so) {
       if (divid instanceof Array) {
         for (var i = 0; i < divid.length; i++) {
           so.shown_div.push(divid[i]);
-          $("#"+divid[i]).show();
+          $("#"+divid[i]).show().trigger("shown");
         }
       } else {
         //alert("div = "+divid);
         so.shown_div.push(divid);
-        $("#"+divid).show();
+        $("#"+divid).show().trigger("shown");
       }
 
     }
@@ -41,7 +41,7 @@ function hide_selector_div_onchange(id,  so) {
   // hide later shown elements
   while(so.shown_div.length>0) {
     hide_id = so.shown_div.pop();
-    $("#"+hide_id).hide();
+    $("#"+hide_id).hide().trigger("hidden");
   }
 }
 
