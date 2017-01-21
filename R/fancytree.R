@@ -3,7 +3,6 @@
 examples.fancytree = function() {
   library(rmdtools)
   setwd("D:/libraries/shinyEventsUI/")
-  view.html(file = "fancytree.html")
 
   restore.point.options(display.restore.point = TRUE)
   library(shinyEventsUI)
@@ -11,10 +10,10 @@ examples.fancytree = function() {
   library(dplyr)
   tree = fancytree(theme="win8",id="myTree",source=list(
     list(
-      key="games",title="games", expanded=TRUE,
+      key="games",title="games", expanded=FALSE,
       folder = TRUE,children = data_frame(key=paste0("node",1:4),title=paste0("game",1:4), type="game", gameId = "games234")
     ),
-    list(key="prefs",title="prefs")
+    list(key="prefs",title="prefs", expanded=FALSE)
   ))
 
   app$ui = jqueryLayoutPage(
@@ -34,7 +33,7 @@ examples.fancytree = function() {
 examples.fancytree = function() {
   library(rmdtools)
   setwd("D:/libraries/shinyEventsUI/")
-  view.html(file = "fancytree.html")
+  #view.html(file = "fancytree.html")
 
   restore.point.options(display.restore.point = TRUE)
   library(shinyEventsUI)
@@ -42,7 +41,7 @@ examples.fancytree = function() {
   library(dplyr)
   tree = fancytree(theme="win8",id="myTree",source=list(
     list(
-      key="games",title="games", expanded=TRUE,
+      key="games",title="games", expanded=FALSE,
       folder = TRUE,children = data_frame(key=paste0("node",1:4),title=paste0("game",1:4), type="game", gameId = "games234")
     ),
     list(key="prefs",title="prefs")
@@ -89,10 +88,10 @@ fancytreeHeader = function(...,extensions=NULL, theme="win8") {
 
 #' fancytree
 #' @export
-fancytree = function(id, source=NULL,..., theme="win8",add.header=TRUE, extensions="") {
+fancytree = function(id, source=NULL,..., theme="win8",add.header=TRUE, extensions="", auto_unbox=TRUE) {
   restore.point("fancytree")
   obj = list(source=source,...)
-  json = toJSON(obj,auto_unbox = FALSE,dataframe = "rows")
+  json = toJSON(obj,auto_unbox = auto_unbox,dataframe = "rows")
   js = paste0('
     $(function () {
       $("#',id,'").fancytree(',json,');
@@ -115,14 +114,29 @@ examples.fancytree.table = function() {
   library(shinyEventsUI)
   app = eventsApp()
   library(dplyr)
-  js.render = '
+
+
+  js.render = paste0('
     //node, cols
-    cols.eq(1).html(\'<input type="text" name="firstname" value="Enter text here">\');
-  '
-  tree = fancytree.table(num.cols=2,col.width=NULL, col.header = 1:2, js.render=js.render,theme="win8",id="myTree",keyboard=FALSE,tabable=FALSE,source=list(
+    if (node.data.type =="game") {
+      cols.eq(1).html(\'<button id="rowButton\'+node.data.gameId+\'" class="gameBtn" type="button">Clickme</button>\');
+      cols.eq(2).html(\'<input type="text" name="firstname" value="Enter text here">\');
+    }
+  ')
+  js.render = paste0('
+    //node, cols
+    if (node.data.type =="game") {
+      ',fancytree.table.button(2,"rowButton","node.data.gameId","ClickMe"),'
+      ',fancytree.table.textInput(3,"textInput","node.data.gameId","node.data.gameId"),'
+    }
+  ')
+
+
+
+  tree = fancytree.table(num.cols=3,col.width=NULL, col.header = 1:3, js.render=js.render,theme="win8",id="myTree",keyboard=FALSE,tabable=FALSE,source=list(
     list(
       key="games",title="games", expanded=TRUE,
-      folder = TRUE,children = data_frame(key=paste0("node",1:4),title=paste0("game",1:4), icon = FALSE, type="game", gameId = "games234")
+      folder = TRUE,children = data_frame(key=paste0("node",1:4),title=paste0("game",1:4), icon = FALSE, type="game", gameId = paste0("game",1:4))
     ),
     list(key="prefs",title="prefs")
   ))
@@ -131,6 +145,17 @@ examples.fancytree.table = function() {
     div(tree),
     div(p("Tree above..."))
   )
+
+  classEventHandler("rowButton",stop.propagation = TRUE, event = "click",
+    function(...){
+      args = list(...)
+      data = args$data
+      restore.point("rowButton_click")
+      cat("clicked button ",sample(1000,1))
+
+    }
+  )
+
   clickHandler("myTree", function(...) {
     args = list(...)
     restore.point("myTree_click")
@@ -141,11 +166,14 @@ examples.fancytree.table = function() {
 }
 
 
-fancytree.table = function(id, source=NULL,extensions=c("table","gridnav") ,nodeCol=0,table=list(nodeColumnIdx=nodeCol, indentation=16,checkboxColumnIdx=NULL), gridnav=list(autofocusInput=FALSE, handleCursorKeys=TRUE),..., theme="win8",add.header=TRUE,
+fancytree.table = function(id, js.render, source=NULL,extensions=c("table","gridnav") ,nodeCol=0,table=list(nodeColumnIdx=nodeCol, indentation=16,checkboxColumnIdx=NULL), gridnav=list(autofocusInput=FALSE, handleCursorKeys=TRUE),..., theme="win8",add.header=TRUE,
 num.cols=2, col.width = paste0(round(100/num.cols,2),"%"), col.header = rep("", num.cols)
   ) {
   obj = nlist(source,extensions,table,gridnav,js.render="",...)
   restore.point("fancytree.table")
+
+  col.header = c(col.header,rep("", num.cols))[seq.int(num.cols)]
+
   json = toJSON(obj,auto_unbox = FALSE,dataframe = "rows")
   json = add.to.json(json,paste0(',
     renderColumns: function(e, data){
@@ -169,6 +197,7 @@ num.cols=2, col.width = paste0(round(100/num.cols,2),"%"), col.header = rep("", 
 
 
   if (!is.null(col.width)) {
+    col.width = rep(col.width, length.out=num.cols)
     colgroup = paste0('
     <colgroup>
     ',paste0('<col width="',col.width,'"></col>',collapse="\n"),'
@@ -192,6 +221,20 @@ num.cols=2, col.width = paste0(round(100/num.cols,2),"%"), col.header = rep("", 
     tags$script(HTML(js))
   )
 }
+
+fancytree.table.button = function(col=2, class.id, row.id, label="Clickme", class="xs-small",...) {
+  paste0('
+    cols.eq(',col-1,').html(\'<button id="', class.id,'_\'+',row.id,'+\'" class="',class.id,' ',class, '" type="button" data-rowid=\'+',row.id,'+\'>',label,'</button>\');
+  ')
+}
+
+fancytree.table.textInput = function(col=2, class.id, row.id,value=paste0('"',string.value,'"'), class="",string.value="",...) {
+  paste0('
+    cols.eq(',col-1,').html(\'<input type="text" id="', class.id,'_\'+',row.id,'+\'" name="', class.id,'_\'+',row.id,'+\'"  class="',class.id,' ',class, '" data-rowid="',row.id,'" value="\'+',value,'+\'"/>\');
+  ')
+
+}
+
 
 add.to.json = function(json, txt) {
   paste0(str.remove.ends(json,right=1),txt,"}")

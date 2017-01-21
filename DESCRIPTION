@@ -8,5 +8,5 @@ Maintainer: Sebastian Kranz <sebastian.kranz@uni-ulm.de>
 Description: radioBtnGroup, nestedSelector
 License: GPL >= 2.0
 Depends:
-    shiny, shinyEvents, jsonlite
+    shiny, shinyEvents, jsonlite, stringtools
 RoxygenNote: 5.0.0
