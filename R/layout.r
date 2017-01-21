@@ -57,10 +57,18 @@ north: {
           txt =paste0("content ", 1:300, collapse=" ")
           p(txt)
         }
-      )
+      ),
+      west=div( actionButton("hideBtn","Hide")),
+      east=div( actionButton("showBtn","Show west"))
     )
     #tags$script(HTML(js))
   )
+  buttonHandler("hideBtn", function(...) {
+    hide.jquery.pane("layout",c("west","center"))
+  })
+  buttonHandler("showBtn", function(...) {
+    show.jquery.pane("layout",c("west","center"))
+  })
   buttonHandler("btn", function(...) {
     txt =paste0("content ", 1:sample.int(n=100,size=1), collapse=" ")
     setUI("myout",p(txt))
@@ -290,6 +298,20 @@ jqueryLayoutHeader = function(style=NULL) {
 
 jqueryPaneOptions = function(resizable=TRUE, closable=TRUE, slideable=TRUE, spacing_open=10, spacing_closed=10) {
   nlist(resizable, closable, slideable, spacing_open, spacing_closed)
+}
+
+hide.jquery.pane = function(id, dir=c("north","west","east","south","center")[1]) {
+  restore.point("hide.jquery.pane")
+  js = paste0(id,'LayoutVar.hide("',dir,'");', collapse="\n")
+  shinyEvents::evalJS(js);
+}
+
+
+show.jquery.pane = function(id, dir=c("north","west","east","south","center")[1], openPane="true") {
+  restore.point("show.jquery.pane")
+
+  js = paste0(id,'LayoutVar.show("',dir,'",',openPane,');',collapse="\n")
+  shinyEvents::evalJS(js);
 }
 
 #' A jqueryLayoutPage
