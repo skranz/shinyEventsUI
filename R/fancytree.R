@@ -128,15 +128,16 @@ examples.fancytree.table = function() {
     if (node.data.type =="game") {
       ',fancytree.table.button(2,"rowButton","node.data.gameId","ClickMe"),'
       ',fancytree.table.textInput(3,"textInput","node.data.gameId","node.data.gameId"),'
+      ',fancytree.table.fileInput(4,"fileInput","node.data.gameId"),'
     }
   ')
 
 
 
-  tree = fancytree.table(num.cols=3,col.width=NULL, col.header = 1:3, js.render=js.render,theme="win8",id="myTree",keyboard=FALSE,tabable=FALSE,source=list(
+  tree = fancytree.table(num.cols=4,col.width="*", js.render=js.render,id="myTree",keyboard=FALSE,tabable=FALSE,source=list(
     list(
-      key="games",title="games", expanded=TRUE,
-      folder = TRUE,children = data_frame(key=paste0("node",1:4),title=paste0("game",1:4), icon = FALSE, type="game", gameId = paste0("game",1:4))
+      key="games",title="games",icon=TRUE, expanded=FALSE,
+      folder = FALSE,children = data_frame(key=paste0("node",1:4),title=paste0("game",1:4), icon = FALSE, type="game", gameId = paste0("game",1:4))
     ),
     list(key="prefs",title="prefs")
   ))
@@ -166,10 +167,10 @@ examples.fancytree.table = function() {
 }
 
 
-fancytree.table = function(id, js.render, source=NULL,extensions=c("table","gridnav") ,nodeCol=0,table=list(nodeColumnIdx=nodeCol, indentation=16,checkboxColumnIdx=NULL), gridnav=list(autofocusInput=FALSE, handleCursorKeys=TRUE),..., theme="win8",add.header=TRUE,
+fancytree.table = function(id, js.render, source=NULL,extensions=c("table","gridnav") ,nodeCol=0, checkboxCol=NULL, checkbox=!is.null(checkboxCol), table=list(nodeColumnIdx=nodeCol, indentation=16,checkboxColumnIdx=checkboxCol), gridnav=list(autofocusInput=FALSE, handleCursorKeys=TRUE),..., theme="win8",add.header=TRUE,
 num.cols=2, col.width = paste0(round(100/num.cols,2),"%"), col.header = rep("", num.cols)
   ) {
-  obj = nlist(source,extensions,table,gridnav,js.render="",...)
+  obj = nlist(source,extensions,table,gridnav,js.render="",checkbox,...)
   restore.point("fancytree.table")
 
   col.header = c(col.header,rep("", num.cols))[seq.int(num.cols)]
@@ -236,7 +237,32 @@ fancytree.table.textInput = function(col=2, class.id, row.id,value=paste0('"',st
 }
 
 
+fancytree.table.fileInput = function(col=2, class.id, row.id, button.label="upload",progress.bar = TRUE,...) {
+  restore.point("fancytree.table.fileInput")
+
+  id = paste0(class.id,'_\'+',row.id,'+\'')
+
+  progress.html = if (progress.bar) {
+    paste0('<div id="',id,'_progress" class="progress progress-striped active shiny-file-input-progress"><div class="progress-bar"></div></div>')
+  } else {
+    ""
+  }
+
+  paste0('cols.eq(',col-1,').html(\'<div class=\"form-group shiny-input-container\" style="margin-bottom: 0;"><div class=\"input-group\">    <label class=\"input-group-btn\">      <span class=\"btn btn-default btn-file\">', button.label,'<input id=\"',id,'\" name=\"',id,'\" type=\"file\" style=\"display: none;\"/>      </span>    </label>    <input style="" type=\"text\" class=\"form-control\" placeholder=\"No file selected\" readonly=\"readonly\"/>  </div>', progress.html,'</div>\');'
+  )
+}
+
+
 add.to.json = function(json, txt) {
   paste0(str.remove.ends(json,right=1),txt,"}")
 
+}
+
+# update all source nodes
+fancytree.update.source = function(id, source) {
+  restore.point("fancytree.update.source")
+  obj = source
+  json = toJSON(obj,auto_unbox = TRUE,dataframe = "rows")
+  js = paste0('$("#',id,'").fancytree("option","source",',json,');')
+  evalJS(js)
 }
