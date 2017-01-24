@@ -98,8 +98,14 @@ fancytree = function(id, source=NULL,..., theme="win8",add.header=TRUE, extensio
       $("#',id,'").fancytree(',json,');
       $("#',id,'").on("fancytreeclick", function(e, data){
         var id = data.node.key;
-        //alert(id);
-        Shiny.onInputChange("click", {eventId: "click", id: "',id,'", class: "fancytree", nodeId: id, data: data.node.data, nonce: Math.random()});
+        var tobj = e.toElement;
+        var tag = tobj.nodeName;
+        // dont trigger event
+        if (tag === "INPUT" | tag === "BUTTON" | tag === "A") {
+          return;
+        }
+
+        Shiny.onInputChange("click", {eventId: "click", id: "',id,'", class: "fancytree_node", nodeId: id, data: data.node.data, targetId: tobj.id, targetTag: tag, nonce: Math.random()});
       });
     });
    ')
@@ -171,7 +177,8 @@ examples.fancytree.table = function() {
 fancytree.table = function(id, js.render, source=NULL,extensions=c("table","gridnav") ,nodeCol=0, checkboxCol=NULL, checkbox=!is.null(checkboxCol), table=list(nodeColumnIdx=nodeCol, indentation=16,checkboxColumnIdx=checkboxCol), gridnav=list(autofocusInput=FALSE, handleCursorKeys=TRUE),..., theme="win8",add.header=TRUE,
 num.cols=2, col.width = paste0(round(100/num.cols,2),"%"), col.header = rep("", num.cols)
   ) {
-  obj = nlist(source,extensions,table,gridnav,js.render="",checkbox,...)
+  obj = nlist(source,extensions,table,gridnav,js.render="",...)
+  if (isTRUE(checkbox)) obj$checkbox = checkbox
   restore.point("fancytree.table")
 
   col.header = c(col.header,rep("", num.cols))[seq.int(num.cols)]
@@ -191,8 +198,14 @@ num.cols=2, col.width = paste0(round(100/num.cols,2),"%"), col.header = rep("", 
       $("#',id,'").fancytree(',json,');
       $("#',id,'").on("fancytreeclick", function(e, data){
         var id = data.node.key;
-        //alert(id);
-        Shiny.onInputChange("click", {eventId: "click", id: "',id,'", class: "fancytree_node", nodeId: id, data: data.node.data, nonce: Math.random()});
+        var tobj = e.toElement;
+        var tag = tobj.nodeName;
+        // dont trigger event
+        if (tag === "INPUT" | tag === "BUTTON" | tag === "A") {
+          return;
+        }
+
+        Shiny.onInputChange("click", {eventId: "click", id: "',id,'", class: "fancytree_node", nodeId: id, data: data.node.data, targetId: tobj.id, targetTag: tag, nonce: Math.random()});
       });
     });
    ')
