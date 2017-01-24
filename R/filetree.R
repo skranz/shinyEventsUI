@@ -4,7 +4,8 @@ examples.filetree = function() {
   library(shinyEventsUI)
   app = eventsApp()
 
-  root.dir = "D:/libraries/shinyEventsUI"
+  root.dir = "D:/libraries/shinyEventsUI/test"
+  setwd(root.dir)
   id = "fileTree"
 
   tree = fancy.file.tree(id,
@@ -19,12 +20,18 @@ examples.filetree = function() {
     h5("Files"),
     smallButton("mkdirBtn","New Folder",size = "extra-small"),
     smallButton("renameBtn","Rename",size = "extra-small"),
-    uiOutput("treeUI")
+    smallButton("duplicateBtn","Duplicate",size = "extra-small"),
+    smallButton("deleteBtn","Delete",size = "extra-small"),
+    uiOutput("treeUI"),
+    fileInput("uploadBtn","Upload", multiple = TRUE)
   )
   setUI("treeUI",tree)
 
   filetreeRenameButtonHandler("renameBtn",id)
   filetreeMakeDirButtonHandler("mkdirBtn",id)
+  filetreeDuplicateButtonHandler("duplicateBtn",id)
+  filetreeDeleteButtonHandler("deleteBtn",id)
+  filetreeUploadHandler("uploadBtn",id)
 
   filetreeButtonHandler("fileInfoBtn",id,function(...) {
     args = list(...)
@@ -104,7 +111,7 @@ fancy.file.tree = function(id="fileTree", root.dir=getwd(), cur.dir=root.dir, ad
   })
 
 
-  set.filetree.state(id, cur.dir=cur.dir, selected=NULL)
+  set.filetree.state(id, cur.dir=cur.dir, root.dir=root.dir, selected=NULL)
 
 
   tree
@@ -189,8 +196,28 @@ get.filetree.state = function(treeId, app=getApp()) {
 
 
 modal.msg = function(msg,title="",...) {
-  showModal(modalDialog(HTML(msg)))
+  showModal(modalDialog(HTML(msg),title = title))
 }
+
+
+filetreeUploadHandler = function(id, treeId, msg.fun=modal.msg, listener=NULL) {
+  restore.point("filetreeUploadHandler")
+
+  ns = NS(treeId)
+
+  changeHandler(id, function(...) {
+    args = list(...)
+    cur.dir = get.filetree.dir(treeId)
+    root.dir = get.filetree.state(treeId)$root.dir
+    restore.point("filetreeUploadHandler.inner")
+    df = args$value
+    res = file.copy(from=df$datapath, to=file.path(cur.dir, df$name),recursive = TRUE,overwrite = TRUE)
+    refresh.filetree(treeId, root.dir, cur.dir)
+
+
+  })
+}
+
 
 filetreeRenameButtonHandler = function(id, treeId, msg.fun=modal.msg, listener=NULL) {
   restore.point("filetreeRenameButtonHandler")
@@ -235,6 +262,135 @@ filetreeRenameButtonHandler = function(id, treeId, msg.fun=modal.msg, listener=N
       textInput(ns("RenameTextInput"),paste0("Please enter the new ", sel.type," name"),""),
       actionButton(ns("RenameOkBtn"),"Ok"),
       actionButton(ns("RenameCancelBtn"),"Cancel")
+    ))
+  })
+}
+
+
+
+
+filetreeDeleteButtonHandler = function(id, treeId, msg.fun=modal.msg, listener=NULL) {
+  restore.point("filetreeDeleteButtonHandler")
+
+  ns = NS(treeId)
+
+  filetreeButtonHandler(id,treeId,function(...) {
+    args = list(...)
+    restore.point("filetreeDeleteButtonHandler.inner")
+
+    file.df = args$file.df
+    n = sum(file.df$selected)
+    if (n == 0) {
+      msg.fun("You have not selected any file.")
+      return()
+    }
+
+    sel.files = file.df$name[file.df$selected]
+    sel.types = file.df$type[file.df$selected]
+
+    root.dir = args$root.dir
+    cur.dir = args$cur.dir
+
+
+    buttonHandler(ns("DeleteCancelBtn"), function(...) {
+      removeModal()
+    })
+
+    buttonHandler(ns("DeleteOkBtn"), function(...) {
+      args = list(...)
+      restore.point(ns("DeleteOkBtn"))
+      #res = try(file.remove(file.path(cur.dir, sel.files)))
+      res = try(unlink(file.path(cur.dir, sel.files), recursive = TRUE))
+      if (is(res,"try-error")) {
+          msg.fun(as.character(res),title="Deletion failed")
+          return()
+      }
+
+      refresh.filetree(treeId, root.dir, cur.dir)
+      removeModal()
+    })
+
+
+
+    showModal(modalDialog(size = "s", title = paste0("Delete ",n," files or folders"),footer = NULL,
+      if (n==1) {
+        p(paste0("Are you sure you want to delete the ", sel.types," '", sel.files,"'?"))
+      } else {
+        p(paste0("You have selected ", sum(sel.types=="folder"), " folders and ", sum(sel.types=="file")," files. Are you sure you want to delete them?"))
+      },
+      actionButton(ns("DeleteOkBtn"),"Yes delete"),
+      actionButton(ns("DeleteCancelBtn"),"Cancel")
+    ))
+  })
+}
+
+
+
+filetreeDuplicateButtonHandler = function(id, treeId, msg.fun=modal.msg, listener=NULL) {
+  restore.point("filetreeDuplicateButtonHandler")
+
+  ns = NS(treeId)
+
+  filetreeButtonHandler(id,treeId,function(...) {
+    args = list(...)
+    restore.point("filetreeDuplicateButtonHandler.inner")
+
+    file.df = args$file.df
+    n = sum(file.df$selected)
+    if (n != 1) {
+      msg.fun("You have to check exactly 1 file or folder to duplicate.")
+      return()
+    }
+
+    sel.file = file.df$name[file.df$selected]
+    sel.type = file.df$type[file.df$selected]
+    root.dir = args$root.dir
+    cur.dir = args$cur.dir
+
+
+    buttonHandler(ns("DuplicateCancelBtn"), function(...) {
+      removeModal()
+    })
+
+    buttonHandler(ns("DuplicateOkBtn"), function(...) {
+      args = list(...)
+      new = getInputValue(ns("DuplicateTextInput"))
+      restore.point(ns("DuplicateOkBtn"))
+      if (nchar(new)>0) {
+        if (file.exists(file.path(cur.dir, new))) {
+          msg.fun(paste0("A file with name '", new, "' already exists."),title="Duplication failed.")
+          return()
+        }
+        if (sel.type == "folder") {
+
+
+          res = try(dir.create(file.path(cur.dir, new)))
+          if (is(res,"try-error")) {
+            msg.fun(as.character(res),title="Duplication of directory failed")
+            return()
+          }
+          files = list.files(file.path(cur.dir, sel.file),all.files = TRUE,recursive = FALSE,ignore.case = TRUE,full.names = TRUE,include.dirs = TRUE)
+          res = try(file.copy(from=files,to = file.path(cur.dir, new),recursive = TRUE, overwrite = FALSE))
+
+        } else {
+          res = try(file.copy(from=file.path(cur.dir, sel.file),to = file.path(cur.dir, new),recursive = TRUE, overwrite = FALSE))
+        }
+        if (is(res,"try-error")) {
+          msg.fun(as.character(res),title="Duplication failed")
+          return()
+        }
+
+      }
+      refresh.filetree(treeId, root.dir, cur.dir)
+      removeModal()
+    })
+
+
+
+    showModal(modalDialog(size = "s", title = paste0("Duplicate ",sel.type," ",sel.file),footer = NULL,
+      textInput(ns("DuplicateTextInput"),paste0("Please enter the ", sel.type," name of the duplicate"),paste0("Copy of ", sel.file)),
+      actionButton(ns("DuplicateOkBtn"),"Ok"),
+      actionButton(ns("DuplicateCancelBtn"),"Cancel")
     ))
   })
 }
@@ -296,11 +452,13 @@ filetreeButtonHandler = function(id, treeId, fun, event="click",stop.propagation
     restore.point("filetreeButtonHandler")
     h = args$treeInfo[[1]]
 
-    df = as.data.frame(do.call(rbind,args$treeInfo)) %>%
+    df = as_data_frame(do.call(rbind,args$treeInfo))
+
+    df = as_data_frame(lapply(df, unlist)) %>%
       select(-nodeType, -curdir,-rootdir) %>%
       rename(name=itemId,type=itemType) %>%
       filter(!type %in% c("header","upfolder"))
-    df$selected = unlist(df$selected)
+
     args$file.df = df
     args$root.dir = h$rootdir
     args$cur.dir = h$curdir
