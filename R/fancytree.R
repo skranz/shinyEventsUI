@@ -65,7 +65,7 @@ examples.fancytree = function() {
 
 #' Header for fancytree
 #' @export
-fancytreeHeader = function(...,extensions=NULL, theme="win8") {
+fancytreeHeader = function(...,extensions=NULL, theme="win8", add.filetree.js = TRUE) {
   restore.point("fancytreeHeader")
   ext.li = list()
   if ("table" %in% extensions) {
@@ -82,6 +82,7 @@ fancytreeHeader = function(...,extensions=NULL, theme="win8") {
     singleton(tags$head(tags$link(href="shared/jqueryui/jquery-ui.min.css", rel="stylesheet"))),
     singleton(tags$head(tags$link(href=paste0("shinyEventsUI/fancytree/skin-",theme,"/ui.fancytree.min.css"), type="text/css", rel="stylesheet"))),
     singleton(tags$head(tags$script(type="text/javascript",src="shinyEventsUI/fancytree/jquery.fancytree.min.js"))),
+    if (add.filetree.js) singleton(tags$head(tags$script(type="text/javascript",src="shinyEventsUI/filetree.js"))),
     ext.li
   )
 }
