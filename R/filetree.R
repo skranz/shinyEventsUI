@@ -46,11 +46,13 @@ examples.filetree = function() {
 
 }
 
-fancy.file.tree = function(id="fileTree", root.dir=getwd(), cur.dir=root.dir, add.checkbox = TRUE, nodeCol=1, file.click.handler=NULL, folder.change.handler=NULL, auto.folder.change=TRUE, ...) {
+fancy.file.tree = function(id="fileTree", root.dir=getwd(), cur.dir=root.dir, add.checkbox = TRUE, nodeCol=1, file.click.handler=NULL, folder.change.handler=NULL, auto.folder.change=TRUE, modify.nodes.fun=NULL, ...) {
 
   restore.point("fancy.file.tree")
 
-  file.nodes = fancy.file.tree.nodes(root.dir, cur.dir)
+  set.filetree.state(id,modify.nodes.fun=modify.nodes.fun)
+
+  file.nodes = fancy.file.tree.nodes(root.dir, cur.dir,treeId=id)
 
   js.render = paste0('
 
@@ -58,13 +60,13 @@ fancy.file.tree = function(id="fileTree", root.dir=getwd(), cur.dir=root.dir, ad
       cols.eq(0).html("<input type=\'checkbox\' class=\'',id,'_filetreeCheckbox\' name=\'',id,'_filetreeCheckbox\' value=\'" + node.data.itemId + "\'>");
     }
 
-    cols.eq(2).html(node.data.size);
-    cols.eq(3).html(node.data.mtime);
+    cols.eq(2).html(node.data.col2);
+    cols.eq(3).html(node.data.col3);
   ')
 
   tree = fancytree.table(id=id,col.width=c("*"), num.cols=4,keyboard=FALSE,tabable=FALSE,js.render=js.render,source=file.nodes, nodeCol=nodeCol)
 
-  clickHandler("fileTree",fun = function(...) {
+  clickHandler(id,fun = function(...) {
     args = list(...)
     data = args$data
     restore.point("filetree.click")
@@ -72,7 +74,7 @@ fancy.file.tree = function(id="fileTree", root.dir=getwd(), cur.dir=root.dir, ad
       new.dir = file.path(data$curdir,data$itemId)
       # update tree to new folder
       if (auto.folder.change) {
-        source = fancy.file.tree.nodes(data$rootdir, new.dir)
+        source = fancy.file.tree.nodes(data$rootdir, new.dir, treeId=id)
         set.filetree.state(id, cur.dir=new.dir, selected=NULL)
         fancytree.update.source(id, source)
       }
@@ -83,7 +85,7 @@ fancy.file.tree = function(id="fileTree", root.dir=getwd(), cur.dir=root.dir, ad
       new.dir = data$itemId
       # update tree to new folder
       if (auto.folder.change) {
-        source = fancy.file.tree.nodes(root.dir, new.dir)
+        source = fancy.file.tree.nodes(root.dir, new.dir,treeId=id)
         set.filetree.state(id, cur.dir=new.dir, selected=NULL)
         fancytree.update.source(id, source)
 
@@ -119,13 +121,13 @@ fancy.file.tree = function(id="fileTree", root.dir=getwd(), cur.dir=root.dir, ad
 
 
 refresh.filetree = function(id, root.dir, cur.dir) {
-  source = fancy.file.tree.nodes(root.dir, cur.dir)
+  source = fancy.file.tree.nodes(root.dir, cur.dir,treeId=id)
   fancytree.update.source(id, source)
 
 
 }
 
-fancy.file.tree.nodes = function(root.dir, cur.dir) {
+fancy.file.tree.nodes = function(root.dir, cur.dir, modify.nodes.fun =  get.filetree.state(treeId)$modify.nodes.fun, treeId) {
   restore.point("fancy.file.tree.nodes")
 
 
@@ -135,27 +137,32 @@ fancy.file.tree.nodes = function(root.dir, cur.dir) {
     mutate(file=files) %>%
     arrange(-isdir, file)
 
-  df$Size = file.size.string(df$size)
-
   df$type = ifelse(df$isdir,"folder","file")
-  df$modified = as.character(df$mtime)
+  df$col2 = file.size.string(df$size)
+  df$col3 = as.character(df$mtime)
   files = df$file
 
 
   if (length(files)>0) {
-    file.nodes = data_frame(key = paste0("file___",files), title=files, icon=TRUE, folder=df$isdir, expanded=FALSE, nodeType = df$type,itemId=files, itemType=df$type,mtime=df$modified, size=df$Size, curdir=cur.dir, rootdir=root.dir)
+    file.nodes = data_frame(key = paste0("file___",files), title=files, icon=TRUE, folder=df$isdir, expanded=FALSE, nodeType = df$type,itemId=files, itemType=df$type,col2=df$col2,col3=df$col3, curdir=cur.dir, rootdir=root.dir)
   } else {
     file.nodes = NULL
   }
 
-
   if (!identical(root.dir, cur.dir)) {
-    head.nodes = data_frame(key = paste0("upfolder"), title=paste0(".. (", substring(cur.dir,nchar(root.dir)+2),")"), icon=FALSE, folder=FALSE, expanded=FALSE, nodeType = "upfolder",itemId=dirname(cur.dir), itemType="upfolder",mtime="", size="",curdir=cur.dir, rootdir=root.dir)
-    file.nodes = rbind(head.nodes, file.nodes)
+    head.nodes = data_frame(key = paste0("upfolder"), title=paste0(".. (", substring(cur.dir,nchar(root.dir)+2),")"), icon=FALSE, folder=FALSE, expanded=FALSE, nodeType = "upfolder",itemId=dirname(cur.dir), itemType="upfolder",col2="",col3="",curdir=cur.dir, rootdir=root.dir)
+  } else {
+    head.nodes = NULL
   }
-  label.nodes = data_frame(key = paste0("header"), title="Name", icon=FALSE, folder=FALSE, expanded=FALSE, nodeType = "header",itemId=cur.dir, itemType="header",mtime="Modified", size="Size",curdir=cur.dir, rootdir=root.dir)
+  label.nodes = data_frame(key = paste0("header"), title="Name", icon=FALSE, folder=FALSE, expanded=FALSE, nodeType = "header",itemId=cur.dir, itemType="header",col2="Size",col3="Modified",curdir=cur.dir, rootdir=root.dir)
 
-  rbind(label.nodes, file.nodes)
+  if (!is.null(modify.nodes.fun)) {
+    res = modify.nodes.fun(root.dir=root.dir, cur.dir=cur.dir, label.nodes, head.nodes, file.nodes)
+    rbind(res$label.nodes, res$head.nodes, res$file.nodes)
+  } else {
+    rbind(label.nodes, head.nodes, file.nodes)
+  }
+
 
 }
 
@@ -191,6 +198,8 @@ get.filetree.dir = function(treeId, app=getApp()) {
 }
 
 get.filetree.state = function(treeId, app=getApp()) {
+
+
   app$.fancy.file.tree.state[[treeId]]
 }
 
@@ -200,7 +209,7 @@ modal.msg = function(msg,title="",...) {
 }
 
 
-filetreeUploadHandler = function(id, treeId, msg.fun=modal.msg, listener=NULL) {
+filetreeUploadButtonHandler = function(id, treeId, msg.fun=modal.msg, listener=NULL, permit.fun=NULL) {
   restore.point("filetreeUploadHandler")
 
   ns = NS(treeId)
@@ -219,7 +228,65 @@ filetreeUploadHandler = function(id, treeId, msg.fun=modal.msg, listener=NULL) {
 }
 
 
-filetreeRenameButtonHandler = function(id, treeId, msg.fun=modal.msg, listener=NULL) {
+
+filetreeDownloadButtonHandler = function(id, treeId, msg.fun=modal.msg, listener=NULL,permit.fun=NULL) {
+  restore.point("filetreeDownloadButtonHandler")
+
+  ns = NS(treeId)
+
+  filetreeButtonHandler(id,treeId,function(...) {
+    args = list(...)
+    restore.point("filetreeDownloadButtonHandler.inner")
+
+    file.df = args$file.df
+    n = sum(file.df$selected)
+    if (n == 0) {
+      msg.fun("You have not selected any file.")
+      return()
+    }
+
+    sel.files = file.df$name[file.df$selected]
+    sel.types = file.df$type[file.df$selected]
+
+    root.dir = args$root.dir
+    cur.dir = args$cur.dir
+
+
+    buttonHandler(ns("DeleteCancelBtn"), function(...) {
+      removeModal()
+    })
+
+    buttonHandler(ns("DeleteOkBtn"), function(...) {
+      args = list(...)
+      restore.point(ns("DeleteOkBtn"))
+      #res = try(file.remove(file.path(cur.dir, sel.files)))
+      res = try(unlink(file.path(cur.dir, sel.files), recursive = TRUE))
+      if (is(res,"try-error")) {
+          msg.fun(as.character(res),title="Deletion failed")
+          return()
+      }
+
+      refresh.filetree(treeId, root.dir, cur.dir)
+      removeModal()
+    })
+
+
+
+    showModal(modalDialog(size = "s", title = paste0("Delete ",n," files or folders"),footer = NULL,
+      if (n==1) {
+        p(paste0("Are you sure you want to delete the ", sel.types," '", sel.files,"'?"))
+      } else {
+        p(paste0("You have selected ", sum(sel.types=="folder"), " folders and ", sum(sel.types=="file")," files. Are you sure you want to delete them?"))
+      },
+      actionButton(ns("DeleteOkBtn"),"Yes delete"),
+      actionButton(ns("DeleteCancelBtn"),"Cancel")
+    ))
+  })
+}
+
+
+
+filetreeRenameButtonHandler = function(id, treeId, msg.fun=modal.msg, listener=NULL,permit.fun=NULL) {
   restore.point("filetreeRenameButtonHandler")
 
   ns = NS(treeId)
@@ -269,7 +336,7 @@ filetreeRenameButtonHandler = function(id, treeId, msg.fun=modal.msg, listener=N
 
 
 
-filetreeDeleteButtonHandler = function(id, treeId, msg.fun=modal.msg, listener=NULL) {
+filetreeDeleteButtonHandler = function(id, treeId, msg.fun=modal.msg, listener=NULL,permit.fun=NULL) {
   restore.point("filetreeDeleteButtonHandler")
 
   ns = NS(treeId)
@@ -326,7 +393,7 @@ filetreeDeleteButtonHandler = function(id, treeId, msg.fun=modal.msg, listener=N
 
 
 
-filetreeDuplicateButtonHandler = function(id, treeId, msg.fun=modal.msg, listener=NULL) {
+filetreeDuplicateButtonHandler = function(id, treeId, msg.fun=modal.msg, listener=NULL,permit.fun=NULL) {
   restore.point("filetreeDuplicateButtonHandler")
 
   ns = NS(treeId)
@@ -396,7 +463,7 @@ filetreeDuplicateButtonHandler = function(id, treeId, msg.fun=modal.msg, listene
 }
 
 
-filetreeMakeDirButtonHandler = function(id, treeId, listener=NULL) {
+filetreeMakeDirButtonHandler = function(id, treeId, msg.fun=modal.msg, listener=NULL,permit.fun=NULL) {
   restore.point("filetreeMakeDirButtonHandler")
   ns = NS(treeId)
   filetreeButtonHandler(id,treeId,function(...) {
@@ -466,4 +533,35 @@ filetreeButtonHandler = function(id, treeId, fun, event="click",stop.propagation
     do.call(fun,args)
   } )
 
+}
+
+file.path.length = function(path) {
+  length(file.path.split(path))
+}
+
+file.path.split <- function(path) {
+    setdiff(strsplit(path,"/|\\\\")[[1]], "")
+}
+
+filetreeButtons = function(treeId, buttons = c("MakeDir","Delete","Rename","Duplicate"),labels=c(MakeDir="New Folder",Delete="Delete","Rename"="Rename",Duplicate="Duplicate","Upload"="Upload"), add.handler=TRUE, button.fun=smallButton, msg.fun = modal.msg, listener=NULL, permit.fun=NULL) {
+
+  restore.point("filetreeButtons")
+  filetreeButtons
+  labels = labels[buttons]
+
+  ns=NS(treeId)
+
+  btns = lapply(buttons, function(mode) {
+    id = ns(paste0(mode,"Btn"))
+    label=labels[mode]
+    if (mode=="Upload") {
+      btn = fileInput(id,label = label, multiple=TRUE)
+    } else {
+      btn = button.fun(id,label=label)
+    }
+    if (add.handler)
+      do.call(paste0("filetree",mode,"ButtonHandler"),list(id=id,treeId=treeId, msg.fun=msg.fun, listener=listener, permit.fun=permit.fun))
+    btn
+  })
+  btns
 }
