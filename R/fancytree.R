@@ -11,12 +11,29 @@ examples.fancytree = function() {
   tree = fancytree(theme="win8",id="myTree",source=list(
     list(
       key="games",title="games", expanded=FALSE,
-      folder = TRUE,children = data_frame(key=paste0("node",1:4),title=paste0("game",1:4), type="game", gameId = "games234")
+      folder = TRUE,children = data_frame(key=paste0("node",1:4),title=paste0("game",1:4), type="game", gameId = "games234", extraClasses="gameNode")
     ),
     list(key="prefs",title="prefs", expanded=FALSE)
   ))
 
+  cm = tagList(
+    treeNodeContextMenu("cmGame",node.class = "gameNode",
+      items = list(
+        edit = list(name="Edit", icon= "fa-edit"),
+        cut = list(name= "Cut", icon= "cut")
+      )
+    )
+  )
+  contextMenuHandler("cmGame", function(session=NULL, ...) {
+    args = list(...)
+    restore.point("cmGame")
+    cat("\ntree node clicked")
+  })
+
+
   app$ui = jqueryLayoutPage(
+    contextMenuHeader(),
+    cm,
     west=div(tree),
     center=div(p("Tree above..."))
   )
@@ -27,6 +44,27 @@ examples.fancytree = function() {
   })
 
   viewApp(app)
+}
+
+treeNodeContextMenu = function(id,items,node.class=NULL, css.sel=make.css.sel(class=node.class), extra.return="", eventId="contextMenuClick") {
+  restore.point("treeNodeContextMenu")
+  items.json = toJSON(items,auto_unbox = TRUE)
+
+  js =  paste0('
+$(function() {
+  $.contextMenu({
+    selector: "',css.sel,'",
+    callback: function(key, opt) {
+      var target = opt.$trigger;
+      var node = $.ui.fancytree.getNode(target);
+      alert("Clicked on " + key + " on node " + node.key);
+      Shiny.onInputChange("',eventId,'", {eventId: "',eventId,'", id: "',id,'", key: key, data: node.data, nodeKey: node.key,', extra.return, ' nonce: Math.random()});
+    },
+    items: \n',items.json,'
+  });
+});
+')
+  tags$script(js)
 }
 
 
@@ -65,7 +103,7 @@ examples.fancytree = function() {
 
 #' Header for fancytree
 #' @export
-fancytreeHeader = function(...,extensions=NULL, theme="win8", add.filetree.js = TRUE) {
+fancytreeHeader = function(...,extensions=NULL, theme="win8", add.filetree.js = TRUE, add.context.menu=FALSE) {
   restore.point("fancytreeHeader")
   ext.li = list()
   if ("table" %in% extensions) {
@@ -78,6 +116,8 @@ fancytreeHeader = function(...,extensions=NULL, theme="win8", add.filetree.js = 
     ext.li = c(ext.li,list(singleton(tags$head(tags$script(type="text/javascript",src="shinyEventsUI/fancytree/jquery.fancytree.dnd.js")))))
   }
   tagList(
+    if (add.context.menu) contextMenuHeader(),
+
     singleton(tags$head(tags$script(src="shared/jqueryui/jquery-ui.min.js"))),
     singleton(tags$head(tags$link(href="shared/jqueryui/jquery-ui.min.css", rel="stylesheet"))),
     singleton(tags$head(tags$link(href=paste0("shinyEventsUI/fancytree/skin-",theme,"/ui.fancytree.min.css"), type="text/css", rel="stylesheet"))),

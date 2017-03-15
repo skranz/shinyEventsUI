@@ -395,7 +395,7 @@ resizeLayout = function(id, layout.var=paste0(id,"LayoutVar")) {
 
 #' A jqueryLayoutPage
 #' @export
-jqueryLayoutPage = function(id="mainPane",center=NULL, north=NULL,west=NULL, east=NULL, south=NULL, panes=list(center=center, north=north, west=west, east=east, south=south), json.opts="", style=NULL,...) {
+jqueryLayoutPage = function(..., id="mainPane",center=NULL, north=NULL,west=NULL, east=NULL, south=NULL, panes=list(center=center, north=north, west=west, east=east, south=south), json.opts="", style=NULL) {
   restore.point("jqueryLayoutPage")
 
 

@@ -4,10 +4,11 @@ examples.contextmenu = function() {
   js = '
  $(function() {
     $.contextMenu({
-        selector: "#div1",
-        callback: function(key, options) {
-            var m = "clicked: " + key;
-            window.console && console.log(m) || alert(m);
+        selector: ".mydiv",
+        callback: function(key, opt) {
+          var target = opt.$trigger;
+          var node = $.ui.fancytree.getNode(target);
+          //alert("Clicked on " + key + " on element " + target.attr("id"));
         },
         items: {
             "edit": {name: "Edit", icon: "fa-edit"},
@@ -17,27 +18,59 @@ examples.contextmenu = function() {
             "delete": {name: "Delete", icon: "delete"}
         }
     });
-    $.contextMenu({
-        selector: "#div2",
-        callback: function(key, options) {
-            var m = "clicked: " + key;
-            window.console && console.log(m) || alert(m);
-        },
-        items: {
-            "edit Div2": {name: "Edit", icon: "edit"}
-        }
-    });
-
   });
   '
+
+  items = list(
+    edit = list(name="Edit", icon= "fa-edit"),
+    cut = list(name= "Cut", icon= "cut")
+  )
+  #js = contextMenuJS(items=items, class="mydiv")
   app$ui = tagList(
     contextMenuHeader(),
-    div(id="div1", p("Context Menu 1")),
-    div(id="div2", p("Context Menu 2")),
-    tags$script(HTML(js))
+    div(id="div1", class="mydiv", p("Context Menu 1")),
+    div(id="div2", class="mydiv", p("Context Menu 2")),
+    contextMenu(id="context", items=items, target.class="mydiv")
   )
+  contextMenuHandler("context", function(..., app=getApp(), session=NULL) {
+    args = list(...)
+    restore.point("context")
+    args
+    cat("context menu clicked")
+  })
+
   viewApp(app)
 }
+
+
+
+contextMenuHandler = function(id, fun,..., eventId="contextMenuClick") {
+  eventHandler(eventId = eventId,id=id,fun = fun,...)
+}
+
+contextMenu = function(id,items,target.id=NULL,target.class=NULL, css.sel=make.css.sel(id=target.id,class=target.class), extra.return="", eventId="contextMenuClick") {
+  restore.point("contextMenuJS")
+  items.json = toJSON(items,auto_unbox = TRUE)
+
+  js =  paste0('
+$(function() {
+  $.contextMenu({
+    selector: "',css.sel,'",
+    callback: function(key, opt) {
+      var target = opt.$trigger;
+      var node = $.ui.fancytree.getNode(target);
+      //alert("Clicked on " + key + " on element " + target.attr("id"));
+      Shiny.onInputChange("',eventId,'", {eventId: "',eventId,'", id: "',id,'", key: key, target_data: target.data(), target_id: target.attr("id"), target_class: target.attr("class"), ', extra.return, ' nonce: Math.random()});
+    },
+    items: \n',items.json,'
+  });
+});
+')
+  tags$script(js)
+}
+
+
+
 
 #' Header for jqueryContextMenu
 #' @export
@@ -63,6 +96,15 @@ uiContextMenuHeader = function(...) {
   )
 }
 
+
+
+
+make.css.sel = function(id=NULL, class=NULL, css.sel = NULL) {
+  if (!is.null(css.sel)) return(css.sel)
+  if (!is.null(id)) return(paste0("#",id))
+  if (!is.null(class)) return(paste0(".",class))
+  NULL
+}
 examples.uicontextmenu = function() {
   app = eventsApp()
 
