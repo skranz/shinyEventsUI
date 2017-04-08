@@ -3,7 +3,7 @@ examples.xw2ui = function() {
   library(shinyEventsUI)
   app = eventsApp()
   library(dplyr)
-  tabs = xw2tabs(id="myTabs",tabs=data_frame(id=paste0("tab",1:4),caption=paste0("tab",1:4), closable=TRUE,div_id = paste0("tab",1:4,"div")))
+  tabs = w2tabs(id="myTabs",tabs=data_frame(id=paste0("tab",1:4),caption=paste0("tab",1:4), closable=TRUE,div_id = paste0("tab",1:4,"div")))
 
 
   app$ui = bootstrapPage(
@@ -26,9 +26,10 @@ examples.xw2ui = function() {
     cat("clicked! ",sample(1000,1))
   })
 
-  eventHandler("close", id="myTabs", function(...) {
+  eventHandler("close", id="myTabs", function(tabId,divId,...) {
     args = list(...)
     restore.point("tabClosedEvent")
+    w2tabs.destroy.tab.content(divId)
     cat("closed!")
   })
 
@@ -161,12 +162,27 @@ w2tabs.add = function(id, tabs=list(tab), tab, select=TRUE) {
 
 #' Close a w2ui tab
 #' @export
-w2tabs.close = function(id, tabId) {
+w2tabs.close = function(id, tabId, destroy.content=FALSE) {
   callJS(paste0("w2ui.",id,".remove"),tabId)
+}
+
+w2tabs.destroy.tab.content = function(divId) {
+  callJS(paste0("xw2ui.destroy_tab_content"),divId)
 }
 
 
 #' Tabs. See w2ui docs
+#' @param id the id of the whole tabset
+#' @param active the index of the initially shown tab
+#' @param tabs a list of tabs each tab is itself a list. Example:
+#' tabs=list(list(id="newTab",caption="New Tab", div_id="tab4div", closable=TRUE, keep_closed_content=FALSE)))
+#' \itemize{
+#' \item id - the id of the tab
+#' \item caption - the caption shown on the tab
+#' \item div_id - the id of the div that contains the tab content
+#' \item closable - if TRUE the tab can be closed by pressing on an "x" icon
+#' \item keep_closed_content if FALSE (default) the tab div with div_id will be removed when the tab is closed. If TRUE the div will only be hidden.
+#' }
 #' @export
 w2tabs = function(id, active=1, tabs=NULL, js.on.render = NULL, add.header=TRUE) {
   restore.point("w2tabs")

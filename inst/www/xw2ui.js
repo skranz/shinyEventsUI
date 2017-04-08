@@ -1,6 +1,10 @@
 var xw2ui = {
+  destroy_tab_content: function(divId) {
+    $("#"+divId).remove();
+  },
+
   tabs_add: function(id, tabs, select) {
-    var select = (typeof select !== 'undefined') ?  select : true;
+    select = (typeof select !== 'undefined') ?  select : true;
     var x = w2ui[id];
     x.add(tabs);
     for (i=0; i < tabs.length; i++) {
@@ -50,6 +54,8 @@ var xw2ui = {
       var tabId = e.target;
       var x = w2ui[id];
       var tabInd = x.tabs_id.indexOf(tabId);
+      var divId = x.tabs[tabInd].div_id;
+      var keep_content = x.tabs[tabInd].keep_closed_content === true;
       var activeId = x.active;
       var newTabId = tabId;
       var newTabInd = tabInd-1;
@@ -66,7 +72,7 @@ var xw2ui = {
       x.tabs_id.splice(tabInd,1);
 
       if (registerShinyEvents) {
-        Shiny.onInputChange("close", {eventId: "close", id: id, class: "xw2tab", tabId: e.target, nonce: Math.random()});
+        Shiny.onInputChange("close", {eventId: "close", id: id, class: "xw2tab", tabId: e.target, divId: divId, nonce: Math.random()});
       }
 
       // click event for new active tab
@@ -78,6 +84,10 @@ var xw2ui = {
       // remove tab from x.show_hide
       x.show_hide.remove(tabId, true);
 
+      // destroy tab content
+      if (!keep_content) {
+        xw2ui.destroy_tab_content(divId);
+      }
 
     });
 

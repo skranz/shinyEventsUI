@@ -4,10 +4,10 @@
 \alias{jqueryLayoutPage}
 \title{A jqueryLayoutPage}
 \usage{
-jqueryLayoutPage(id = "mainPane", center = NULL, north = NULL,
+jqueryLayoutPage(..., id = "mainPane", center = NULL, north = NULL,
   west = NULL, east = NULL, south = NULL, panes = list(center = center,
   north = north, west = west, east = east, south = south), json.opts = "",
-  style = NULL, ...)
+  style = NULL)
 }
 \description{
 A jqueryLayoutPage

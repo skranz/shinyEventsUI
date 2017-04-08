@@ -1,8 +1,10 @@
 #' show a message in some outputUI for duration of millis milliseconds
 timedMessage = function(id,msg="",html=msg,ui=HTML(html), millis=3000, empty.msg = "", empty.ui=HTML(empty.msg), app=getApp()) {
   restore.point("timedMessage")
-  setUI(id, ui)
-  dsetUI(id, ui)
+  try({
+    setUI(id, ui)
+    dsetUI(id, ui)
+  })
 
   obs.id = paste0("..timedMessage..",id)
   flag.id = paste0("flag", obs.id)
@@ -20,7 +22,9 @@ timedMessage = function(id,msg="",html=msg,ui=HTML(html), millis=3000, empty.msg
       return()
     }
     try(app[[obs.id]]$destroy())
-    setUI(id, empty.ui)
-    dsetUI(id, empty.ui)
+    try({
+      setUI(id, empty.ui)
+      dsetUI(id, empty.ui)
+    })
   })
 }

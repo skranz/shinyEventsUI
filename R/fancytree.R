@@ -57,7 +57,7 @@ $(function() {
     callback: function(key, opt) {
       var target = opt.$trigger;
       var node = $.ui.fancytree.getNode(target);
-      alert("Clicked on " + key + " on node " + node.key);
+      //alert("Clicked on " + key + " on node " + node.key);
       Shiny.onInputChange("',eventId,'", {eventId: "',eventId,'", id: "',id,'", key: key, data: node.data, nodeKey: node.key,', extra.return, ' nonce: Math.random()});
     },
     items: \n',items.json,'
