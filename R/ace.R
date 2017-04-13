@@ -65,8 +65,7 @@ aceEditorHtml <- function(
       "Shiny version 0.9.1.9004 required to use input debouncing in shinyAce.")
     }
 
-    js <- paste(js, "$('#",outputId,"').data('debounce',",debounce,");",
-                sep="")
+    js <- paste(js, "$('#",outputId,"').data('debounce',",debounce,");",sep="")
   }
 
   if (wordWrap){
@@ -139,6 +138,8 @@ aceEditorHtml <- function(
   if (!missing(fontFamily)) {
     style = paste0(style,"; font-family: ", fontFamily,";")
   }
+
+  js <- paste(js, "$('#",outputId,"').data('ace',",editorVar,");",sep="")
 
   as.character(tagList(
     pre(id=outputId, class="shiny-ace",
