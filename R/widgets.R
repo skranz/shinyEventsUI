@@ -1,15 +1,54 @@
+examples.form.widgets = function() {
+  app = eventsApp()
+  app$ui = bootstrapPage(
+    checkboxGroupInput("check", "Variables to show:",
+                     c("Cylinders" = "cyl",
+                       "Transmission" = "am",
+                       "Gears" = "gear")),
+
+    myText = textInput("myText","Text:","Hello World"),
+    radioButtons("myRadio",label="Make your choice",choices = list("Choice A"="A","Choice B"= "B"), selected=NA),
+
+    smallButton("btn","Click me", form.ids=c("check", "myRadio","myText"))
+  )
+  buttonHandler("btn", function(formValues,...) {
+    restore.point("jnsifnjsfn")
+    print(formValues)
+    #cat(formValues$myRadio)
+  })
+  viewApp(app)
+}
+
+
 examples.widgets = function() {
   app = eventsApp()
   app$ui = bootstrapPage(
     slimCollapsePanel(open=TRUE,"Panel",
       p("I am open!")
-    )
+    ),
+    radioButtons("myRadio",label="Make your choice",choices = c("A","B"), selected="A"),
+
+    smallButton("btn","Click me", form.ids="myRadio")
   )
+  buttonHandler("btn", function(formValues,...) {
+    restore.point("jnsifnjsfn")
+    cat(formValues$myRadio)
+  })
   viewApp(app)
 }
 
-smallButton = function(id, label,class.add="",class="btn btn-default action-button btn-xs",style="",...) {
-  tags$button(id=id, style=style, type="button", class=paste(class,class.add),...,label)
+smallButton = function(id, label,class.add="",class="btn btn-default action-button btn-xs",style="",form.ids=NULL,form.sel=NULL,...) {
+  args = list(...)
+  if ("data-form-selector" %in% names(args) | (is.null(form.ids) & is.null(form.sel))) {
+    tags$button(id=id, style=style, type="button", class=paste(class,class.add),...,label)
+  } else {
+    if (is.null(form.sel)) {
+      form.sel = paste0("#", form.ids,collapse=", ")
+    }
+    tags$button(id=id, style=style, type="button", class=paste(class,class.add),`data-form-selector`=form.sel,...,label)
+
+  }
+
 }
 
 
