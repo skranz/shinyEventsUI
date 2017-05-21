@@ -28,3 +28,20 @@ timedMessage = function(id,msg="",html=msg,ui=HTML(html), millis=3000, empty.msg
     })
   })
 }
+
+
+colored.html = function(txt, color="#cc0000") {
+  if (is.null(color)) return(txt)
+  paste0("<font color='",color,"'>",txt,"</font>")
+}
+
+
+errorMessage = function(id,msg="",html=colored.html(msg,color="#cc0000"), ui=HTML(html), millis=Inf, empty.msg = "", empty.ui=HTML(empty.msg), app=getApp()) {
+  restore.point("errorMessage")
+  timedMessage(id=id,msg=msg, html=html, ui=ui, millis=millis, empty.msg="", empty.ui=empty.ui,app=app)
+}
+
+uiMessage = function(id,msg="",html=msg, ui=HTML(html), millis=Inf, empty.msg = "", empty.ui=HTML(empty.msg), app=getApp()) {
+  restore.point("uiMessage")
+  timedMessage(id=id,msg=msg, html=html, ui=ui, millis=millis, empty.msg="", empty.ui=empty.ui,app=app)
+}
