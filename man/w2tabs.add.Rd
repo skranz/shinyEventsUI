@@ -9,4 +9,3 @@ w2tabs.add(id, tabs = list(tab), tab, select = TRUE)
 \description{
 Add a w2ui tab
 }
-

@@ -9,4 +9,3 @@ contextMenuHeader(...)
 \description{
 Header for jqueryContextMenu
 }
-

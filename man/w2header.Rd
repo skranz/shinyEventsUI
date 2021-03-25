@@ -9,4 +9,3 @@ w2header(...)
 \description{
 Header for w2ui widgets
 }
-

@@ -4,10 +4,14 @@
 \alias{fancytreeHeader}
 \title{Header for fancytree}
 \usage{
-fancytreeHeader(..., extensions = NULL, theme = "win8",
-  add.filetree.js = TRUE, add.context.menu = FALSE)
+fancytreeHeader(
+  ...,
+  extensions = NULL,
+  theme = "win8",
+  add.filetree.js = TRUE,
+  add.context.menu = FALSE
+)
 }
 \description{
 Header for fancytree
 }
-

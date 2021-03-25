@@ -4,13 +4,22 @@
 \alias{jqueryLayoutPanes}
 \title{A jqueryLayoutPage}
 \usage{
-jqueryLayoutPanes(id = NULL, center = NULL, north = NULL, west = NULL,
-  east = NULL, south = NULL, panes = list(north = north, west = west,
-  center = center, east = east, south = south), json.opts = "",
-  style = NULL, js.do.layout = TRUE, parent = "body",
-  parent.layout = NULL, parent.pane = "center")
+jqueryLayoutPanes(
+  id = NULL,
+  center = NULL,
+  north = NULL,
+  west = NULL,
+  east = NULL,
+  south = NULL,
+  panes = list(north = north, west = west, center = center, east = east, south = south),
+  json.opts = "",
+  style = NULL,
+  js.do.layout = TRUE,
+  parent = "body",
+  parent.layout = NULL,
+  parent.pane = "center"
+)
 }
 \description{
 A jqueryLayoutPage
 }
-

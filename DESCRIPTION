@@ -9,4 +9,4 @@ Description: radioBtnGroup, nestedSelector
 License: GPL >= 2.0
 Depends:
     shiny, shinyEvents, jsonlite, stringtools, dplyr
-RoxygenNote: 5.0.0
+RoxygenNote: 7.1.1

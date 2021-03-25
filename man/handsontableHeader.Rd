@@ -9,4 +9,3 @@ handsontableHeader(...)
 \description{
 Header for jqueryContextMenu
 }
-

@@ -9,4 +9,3 @@ w2toolbar(id, items = NULL, js.on.render = NULL, add.header = TRUE)
 \description{
 Toolbar or menubar. See w2ui docs
 }
-

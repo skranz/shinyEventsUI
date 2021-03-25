@@ -4,8 +4,13 @@
 \alias{radioBtnGroupHandler}
 \title{Add change hangdler to a radio button group}
 \usage{
-radioBtnGroupHandler(id, fun, ..., eventId = "radioBtnGroupChange",
-  app = getApp())
+radioBtnGroupHandler(
+  id,
+  fun,
+  ...,
+  eventId = "radioBtnGroupChange",
+  app = getApp()
+)
 }
 \value{
 value the value of the selected button
@@ -13,4 +18,3 @@ value the value of the selected button
 \description{
 Add change hangdler to a radio button group
 }
-

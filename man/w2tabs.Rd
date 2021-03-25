@@ -4,8 +4,7 @@
 \alias{w2tabs}
 \title{Tabs. See w2ui docs}
 \usage{
-w2tabs(id, active = 1, tabs = NULL, js.on.render = NULL,
-  add.header = TRUE)
+w2tabs(id, active = 1, tabs = NULL, js.on.render = NULL, add.header = TRUE)
 }
 \arguments{
 \item{id}{the id of the whole tabset}
@@ -25,4 +24,3 @@ tabs=list(list(id="newTab",caption="New Tab", div_id="tab4div", closable=TRUE, k
 \description{
 Tabs. See w2ui docs
 }
-

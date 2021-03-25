@@ -4,10 +4,17 @@
 \alias{timedMessage}
 \title{show a message in some outputUI for duration of millis milliseconds}
 \usage{
-timedMessage(id, msg = "", html = msg, ui = HTML(html), millis = 3000,
-  empty.msg = "", empty.ui = HTML(empty.msg), app = getApp())
+timedMessage(
+  id,
+  msg = "",
+  html = msg,
+  ui = HTML(html),
+  millis = 3000,
+  empty.msg = "",
+  empty.ui = HTML(empty.msg),
+  app = getApp()
+)
 }
 \description{
 show a message in some outputUI for duration of millis milliseconds
 }
-

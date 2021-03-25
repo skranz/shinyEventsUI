@@ -4,10 +4,17 @@
 \alias{w2sidebar}
 \title{Sidebar. See w2ui docs}
 \usage{
-w2sidebar(id, img = NULL, nodes = NULL, ..., width = "100\%",
-  height = "100\%", js.on.render = "", add.header = TRUE)
+w2sidebar(
+  id,
+  img = NULL,
+  nodes = NULL,
+  ...,
+  width = "100\%",
+  height = "100\%",
+  js.on.render = "",
+  add.header = TRUE
+)
 }
 \description{
 Sidebar. See w2ui docs
 }
-

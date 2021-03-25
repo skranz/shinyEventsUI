@@ -9,4 +9,3 @@ jqueryLayoutHeader(style = NULL)
 \description{
 A jqueryLayoutPage
 }
-

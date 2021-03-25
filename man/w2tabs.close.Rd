@@ -9,4 +9,3 @@ w2tabs.close(id, tabId, destroy.content = FALSE)
 \description{
 Close a w2ui tab
 }
-

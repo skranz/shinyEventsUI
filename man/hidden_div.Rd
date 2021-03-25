@@ -9,4 +9,3 @@ hidden_div(id, ..., style = "")
 \description{
 A div that is by default not shown
 }
-

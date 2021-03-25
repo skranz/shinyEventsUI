@@ -4,10 +4,16 @@
 \alias{fancytree}
 \title{fancytree}
 \usage{
-fancytree(id, source = NULL, ..., theme = "win8", add.header = TRUE,
-  extensions = "", auto_unbox = TRUE)
+fancytree(
+  id,
+  source = NULL,
+  ...,
+  theme = "win8",
+  add.header = TRUE,
+  extensions = "",
+  auto_unbox = TRUE
+)
 }
 \description{
 fancytree
 }
-

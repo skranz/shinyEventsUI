@@ -12,4 +12,3 @@ value a list with the values of all shown selector parts
 \description{
 Add a change handler to a nested selector
 }
-
