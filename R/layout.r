@@ -235,7 +235,6 @@ style = tags$style(HTML('
   viewApp(app)
 }
 
-
 frozenHeaderPane = function(id=NULL, header=NULL, content=NULL, parent="body", parent.layout=NULL, parent.pane="center", style = NULL, json.opts=NULL, auto.resize = TRUE) {
   restore.point("frozenHeaderPane")
 
